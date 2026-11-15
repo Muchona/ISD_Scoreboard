@@ -17,6 +17,13 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { Footer } from './components/Footer';
 import OnyxBadge from './components/OnyxBadge';
 import { ThemeMode, UserProfile } from './types';
+import {
+  supabase,
+  mapSupabaseUserToProfile,
+  pullUserCloudRow,
+  pushUserCloudRow,
+  applyCloudDossierState,
+} from './lib/supabase';
 import { ShieldCheck, Heart, ExternalLink } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -82,6 +89,55 @@ export const App: React.FC = () => {
     localStorage.setItem('isd_theme', theme);
   }, [theme]);
 
+  // Restore active Supabase session & sync cloud dossier on mount/auth changes
+  useEffect(() => {
+    let mounted = true;
+
+    const hydrateFromSession = async (sbUser: Parameters<typeof mapSupabaseUserToProfile>[0]) => {
+      const baseProfile = mapSupabaseUserToProfile(sbUser);
+      const cloud = await pullUserCloudRow(sbUser.id);
+      if (!mounted) return;
+      const mergedProfile: UserProfile = cloud?.profile
+        ? { ...baseProfile, ...cloud.profile, id: sbUser.id }
+        : baseProfile;
+      if (cloud?.dossierState) {
+        applyCloudDossierState(cloud.dossierState);
+      }
+      setUser(mergedProfile);
+      localStorage.setItem('isd_user', JSON.stringify(mergedProfile));
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted && data.session?.user) {
+        hydrateFromSession(data.session.user);
+      }
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+      if (event === 'SIGNED_IN' && session?.user) {
+        hydrateFromSession(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUser((prev) => (prev?.id === 'demo-user-1' ? prev : null));
+        if (localStorage.getItem('isd_user')) {
+          try {
+            const parsed = JSON.parse(localStorage.getItem('isd_user') || '{}');
+            if (parsed.id !== 'demo-user-1') {
+              localStorage.removeItem('isd_user');
+            }
+          } catch {
+            localStorage.removeItem('isd_user');
+          }
+        }
+      }
+    });
+
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
   const toggleTheme = () => {
     const root = document.documentElement;
     root.classList.add('theme-transition');
@@ -94,26 +150,42 @@ export const App: React.FC = () => {
     setAuthModalOpen(true);
   };
 
-  const handleLoginSuccess = (loggedInUser: UserProfile) => {
+  const handleLoginSuccess = async (loggedInUser: UserProfile) => {
     setUser(loggedInUser);
     localStorage.setItem('isd_user', JSON.stringify(loggedInUser));
     setActiveTab('dashboard'); // Direct to Citizenship Dashboard upon logging in
+
+    if (loggedInUser.id !== 'demo-user-1') {
+      const cloud = await pullUserCloudRow(loggedInUser.id);
+      if (cloud?.dossierState) {
+        applyCloudDossierState(cloud.dossierState);
+      } else {
+        await pushUserCloudRow(loggedInUser.id, loggedInUser);
+      }
+    }
   };
 
   const handleUpdateUser = (updatedUser: UserProfile) => {
     setUser(updatedUser);
     localStorage.setItem('isd_user', JSON.stringify(updatedUser));
+    if (updatedUser.id !== 'demo-user-1') {
+      void pushUserCloudRow(updatedUser.id, updatedUser);
+    }
   };
 
   const handleUpgradeSuccess = (updatedUser: UserProfile) => {
     setUser(updatedUser);
     localStorage.setItem('isd_user', JSON.stringify(updatedUser));
+    if (updatedUser.id !== 'demo-user-1') {
+      void pushUserCloudRow(updatedUser.id, updatedUser);
+    }
   };
 
   const handleSignOut = () => {
     setUser(null);
     localStorage.removeItem('isd_user');
     setActiveTab('home');
+    void supabase.auth.signOut();
   };
 
   return (

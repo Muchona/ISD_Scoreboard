@@ -16,6 +16,7 @@ import {
   Check,
 } from 'lucide-react';
 import { UserProfile } from '../types';
+import { supabase, mapSupabaseUserToProfile } from '../lib/supabase';
 
 interface AuthPageProps {
   initialMode?: 'signin' | 'signup';
@@ -74,7 +75,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     'bg-emerald-500',
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -99,19 +100,49 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     }
 
     setIsLoading(true);
-
-    setTimeout(() => {
+    try {
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: window.location.href.split('#')[0],
+            data: {
+              full_name: fullName.trim(),
+              current_stamp: currentStamp,
+              target_year: targetYear,
+              is_pro: false,
+            },
+          },
+        });
+        if (error) {
+          setErrorMessage(error.message);
+          return;
+        }
+        if (data.user && data.session) {
+          onLoginSuccess(mapSupabaseUserToProfile(data.user));
+        } else {
+          setErrorMessage('Account created! Please check your email to confirm your address, then sign in.');
+          setMode('signin');
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) {
+          setErrorMessage(error.message);
+          return;
+        }
+        if (data.user) {
+          onLoginSuccess(mapSupabaseUserToProfile(data.user));
+        }
+      }
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Authentication failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      const user: UserProfile = {
-        id: `user-${Date.now()}`,
-        name: mode === 'signup' ? fullName : email.split('@')[0],
-        email: email,
-        currentStamp: currentStamp,
-        targetYear: targetYear,
-        isPro: false,
-      };
-      onLoginSuccess(user);
-    }, 600);
+    }
   };
 
   const handleDemoSignIn = (role: 'applicant' | 'pro') => {
@@ -130,13 +161,28 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     }, 450);
   };
 
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     if (!email) {
       setErrorMessage('Please enter your email to receive a recovery link.');
       return;
     }
-    setForgotPasswordSent(true);
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.href.split('#')[0],
+      });
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+      setForgotPasswordSent(true);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Could not send recovery email.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
