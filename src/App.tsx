@@ -1,0 +1,256 @@
+import React, { useState, useEffect } from 'react';
+import { Navbar } from './components/Navbar';
+import { HomeLanding } from './components/HomeLanding';
+import { CitizenshipDashboard } from './components/CitizenshipDashboard';
+import { DaysCalculator } from './components/DaysCalculator';
+import { ScorecardBento } from './components/ScorecardBento';
+import { WatermarkEngine } from './components/WatermarkEngine';
+import { RequirementsHub } from './components/RequirementsHub';
+import { PricingSection } from './components/PricingSection';
+import { AuthModal } from './components/AuthModal';
+import { AuthPage } from './components/AuthPage';
+import { ProfileSettingsModal } from './components/ProfileSettingsModal';
+import { CheckoutModal } from './components/CheckoutModal';
+import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
+import { TermsModal } from './components/TermsModal';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
+import { Footer } from './components/Footer';
+import OnyxBadge from './components/OnyxBadge';
+import { ThemeMode, UserProfile } from './types';
+import { ShieldCheck, Heart, ExternalLink } from 'lucide-react';
+
+export const App: React.FC = () => {
+  // Theme state: defaults straight to 'dark' for all new customers/visitors.
+  // Respects 'light' only if previously toggled explicitly by the user.
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const saved = localStorage.getItem('isd_theme');
+    if (saved === 'light') return 'light';
+    return 'dark';
+  });
+
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const savedUser = localStorage.getItem('isd_user');
+    return savedUser ? 'dashboard' : 'home';
+  });
+
+  // User Profile State (Simulated persistence)
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    const saved = localStorage.getItem('isd_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  // Guard: If user logs out, dashboard is disabled and redirects immediately to home
+  useEffect(() => {
+    if (!user && activeTab === 'dashboard') {
+      setActiveTab('home');
+    }
+  }, [user, activeTab]);
+
+  // Always jump to top on page load / refresh and disable browser retaining old scroll position
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
+  // Always jump to top whenever user changes page / tab
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [activeTab]);
+
+  // Auth, Checkout, Legal & Compliance Modal State
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+
+  // Synchronize 'dark' class on HTML root element
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('isd_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    root.classList.add('theme-transition');
+    window.setTimeout(() => root.classList.remove('theme-transition'), 250);
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  const handleOpenAuth = (mode: 'signin' | 'signup' = 'signin') => {
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleLoginSuccess = (loggedInUser: UserProfile) => {
+    setUser(loggedInUser);
+    localStorage.setItem('isd_user', JSON.stringify(loggedInUser));
+    setActiveTab('dashboard'); // Direct to Citizenship Dashboard upon logging in
+  };
+
+  const handleUpdateUser = (updatedUser: UserProfile) => {
+    setUser(updatedUser);
+    localStorage.setItem('isd_user', JSON.stringify(updatedUser));
+  };
+
+  const handleUpgradeSuccess = (updatedUser: UserProfile) => {
+    setUser(updatedUser);
+    localStorage.setItem('isd_user', JSON.stringify(updatedUser));
+  };
+
+  const handleSignOut = () => {
+    setUser(null);
+    localStorage.removeItem('isd_user');
+    setActiveTab('home');
+  };
+
+  return (
+    <div className="relative min-h-screen flex flex-col w-full max-w-full overflow-x-hidden">
+      {/* Soft ambient glow behind the header */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(16,185,129,0.10),transparent)] dark:bg-[radial-gradient(60%_60%_at_50%_0%,rgba(16,185,129,0.14),transparent)]"
+      />
+      
+      {/* Top Navbar with Hybrid Theme Switcher & User Account Header */}
+      <Navbar
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        user={user}
+        onOpenAuth={handleOpenAuth}
+        onOpenSettings={() => setSettingsModalOpen(true)}
+        onSignOut={handleSignOut}
+      />
+
+      {/* Main Content Body */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 md:pb-16">
+        {activeTab === 'home' && (
+          <HomeLanding
+            onNavigate={setActiveTab}
+          />
+        )}
+        {activeTab === 'dashboard' && (
+          <CitizenshipDashboard
+            user={user}
+            onNavigate={setActiveTab}
+            onOpenAuth={handleOpenAuth}
+          />
+        )}
+        {activeTab === 'calculator' && (
+          <DaysCalculator onGoToVault={() => setActiveTab('vault')} />
+        )}
+        {activeTab === 'vault' && (
+          <ScorecardBento
+            onGoToPricing={() => setActiveTab('pricing')}
+            user={user}
+            onOpenCheckout={() => setCheckoutModalOpen(true)}
+          />
+        )}
+        {activeTab === 'watermark' && <WatermarkEngine />}
+        {activeTab === 'requirements' && <RequirementsHub />}
+        {activeTab === 'pricing' && (
+          <PricingSection
+            onOpenCheckout={() => setCheckoutModalOpen(true)}
+            onStartCalculator={() => setActiveTab('calculator')}
+            user={user}
+          />
+        )}
+        {activeTab === 'auth' && (
+          <AuthPage
+            initialMode={authModalMode}
+            onLoginSuccess={handleLoginSuccess}
+            onNavigateHome={() => setActiveTab('home')}
+            onOpenPrivacy={() => setPrivacyModalOpen(true)}
+            onOpenTerms={() => setTermsModalOpen(true)}
+          />
+        )}
+      </main>
+
+      {/* Standalone Authentication Modal (Usable from anywhere in the app) */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode={authModalMode}
+        onLoginSuccess={handleLoginSuccess}
+        onOpenPrivacy={() => setPrivacyModalOpen(true)}
+        onOpenTerms={() => setTermsModalOpen(true)}
+      />
+
+      {/* Stripe-Powered Pro Checkout Modal */}
+      <CheckoutModal
+        isOpen={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        user={user}
+        onUpgradeSuccess={handleUpgradeSuccess}
+        onOpenAuth={handleOpenAuth}
+      />
+
+      {/* Profile & Vault Settings Modal */}
+      {user && (
+        <ProfileSettingsModal
+          isOpen={settingsModalOpen}
+          onClose={() => setSettingsModalOpen(false)}
+          user={user}
+          onUpdateUser={handleUpdateUser}
+          onSignOut={handleSignOut}
+          onOpenCheckout={() => setCheckoutModalOpen(true)}
+        />
+      )}
+
+      {/* GDPR Data Protection & Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        isOpen={privacyModalOpen}
+        onClose={() => setPrivacyModalOpen(false)}
+        onOpenTerms={() => {
+          setPrivacyModalOpen(false);
+          setTermsModalOpen(true);
+        }}
+      />
+
+      {/* Official Irish Terms of Service Modal */}
+      <TermsModal
+        isOpen={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+        onOpenPrivacy={() => {
+          setTermsModalOpen(false);
+          setPrivacyModalOpen(true);
+        }}
+      />
+
+      {/* Floating GDPR Cookie & Local Storage Consent Banner */}
+      <CookieConsentBanner
+        onOpenPrivacy={() => setPrivacyModalOpen(true)}
+      />
+
+      {/* Official Executive Civic & Compliance Footer */}
+      <Footer
+        onNavigate={setActiveTab}
+        onOpenPrivacy={() => setPrivacyModalOpen(true)}
+        onOpenTerms={() => setTermsModalOpen(true)}
+        onOpenCookieSettings={() => {
+          localStorage.removeItem('isd_cookie_consent');
+          localStorage.removeItem('isd_cookie_consent_timestamp');
+          window.location.reload();
+        }}
+        onOpenAuth={handleOpenAuth}
+      />
+    </div>
+  );
+};
+
+export default App;
+

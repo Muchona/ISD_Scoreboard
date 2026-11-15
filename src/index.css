@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind v4: dark mode is driven by the `.dark` class on <html>
+ * (v4 ignores `darkMode: 'class'` in tailwind.config.js — this line is what makes the toggle work).
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-harp-50: #ecfdf5;
+  --color-harp-100: #d1fae5;
+  --color-harp-500: #10b981;
+  --color-harp-600: #00875a;
+  --color-harp-700: #006c48;
+
+  --color-obsidian-800: #111827;
+  --color-obsidian-900: #090d16;
+  --color-obsidian-950: #05070c;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-slate-100 text-slate-950 dark:bg-obsidian-900 dark:text-slate-100;
+    font-feature-settings: 'cv11', 'ss01';
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+  ::selection {
+    @apply bg-emerald-200 text-emerald-950 dark:bg-emerald-500/40 dark:text-white;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-emerald-500;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  /* Surfaces: Crisp high-contrast in Light Mode + White Neon Halo in Dark Mode */
+  .card {
+    @apply rounded-2xl border border-slate-300 ring-1 ring-slate-900/[0.04] bg-white
+           shadow-[0_2px_6px_rgba(15,23,42,0.05),0_12px_28px_-6px_rgba(15,23,42,0.08)]
+           dark:ring-0 dark:border-white/25 dark:bg-obsidian-800
+           dark:shadow-[0_0_36px_rgba(255,255,255,0.22),0_0_12px_rgba(255,255,255,0.38)];
+  }
+  .card-inset {
+    @apply rounded-xl border border-slate-300/80 bg-slate-50/90 dark:border-white/[0.08] dark:bg-white/[0.03];
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 h-10 text-sm font-semibold
+           transition-all duration-150 select-none whitespace-nowrap
+           active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-xs rounded-lg;
+  }
+  .btn-primary {
+    @apply bg-emerald-600 text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-700
+           dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400;
+  }
+  .btn-secondary {
+    @apply border border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50 hover:text-slate-950 hover:border-slate-400
+           dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10;
+  }
+  .btn-ghost {
+    @apply text-slate-700 hover:bg-slate-200/80 hover:text-slate-950
+           dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white;
+  }
+
+  /* Form controls */
+  .input {
+    @apply w-full h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-950 font-medium
+           transition-colors focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15
+           dark:border-white/15 dark:bg-white/5 dark:text-slate-100;
+  }
+
+  /* Small labels */
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 h-7 text-xs font-semibold ring-1 ring-inset whitespace-nowrap select-none;
+  }
+  .chip-emerald {
+    @apply bg-emerald-50 text-emerald-800 ring-emerald-600/30 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/20;
+  }
+  .chip-amber {
+    @apply bg-amber-50 text-amber-800 ring-amber-600/30 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20;
+  }
+  .chip-blue {
+    @apply bg-blue-50 text-blue-800 ring-blue-600/30 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-400/20;
+  }
+  .chip-slate {
+    @apply bg-slate-200/80 text-slate-800 ring-slate-400/30 dark:bg-white/5 dark:text-slate-300 dark:ring-white/10;
+  }
+}
+
+/* Smooth radial-ring animation */
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme switch: animate colours only (no layout jank → 60fps) */
+.theme-transition,
+.theme-transition * {
+  transition-property: background-color, border-color, color, fill, stroke !important;
+  transition-duration: 200ms !important;
+}
+
+/* High-Precision Form 8 Dossier Print & PDF Output */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  header, nav, footer, .print\:hidden {
+    display: none !important;
+  }
+  .dossier-modal-backdrop {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  .dossier-modal-window {
+    max-height: none !important;
+    height: auto !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+  .dossier-page {
+    page-break-after: always !important;
+    break-after: page !important;
+    box-sizing: border-box;
+    padding-bottom: 2rem;
+  }
+  .dossier-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+    padding-bottom: 0;
+  }
+  .print-page-break {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  .print-avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    margin: 1.2cm;
+    size: A4 portrait;
+  }
+}
