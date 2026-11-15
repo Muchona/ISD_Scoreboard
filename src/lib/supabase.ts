@@ -42,6 +42,7 @@ export function mapSupabaseUserToProfile(sbUser: SupabaseUser): UserProfile {
       typeof meta.target_year === 'number' ? meta.target_year : 2026,
     isPro: Boolean(meta.is_pro),
     avatarUrl: typeof meta.avatar_url === 'string' ? meta.avatar_url : undefined,
+    onboardingCompleted: Boolean(meta.onboarding_completed || meta.current_stamp),
     subscription: meta.subscription,
   };
 }

@@ -77,5 +77,6 @@ export interface UserProfile {
   targetYear?: number;
   isPro?: boolean;
   avatarUrl?: string;
+  onboardingCompleted?: boolean;
   subscription?: SubscriptionDetails;
 }

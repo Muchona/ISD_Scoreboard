@@ -9,6 +9,7 @@ import { RequirementsHub } from './components/RequirementsHub';
 import { PricingSection } from './components/PricingSection';
 import { AuthModal } from './components/AuthModal';
 import { AuthPage } from './components/AuthPage';
+import { OnboardingModal } from './components/OnboardingModal';
 import { ProfileSettingsModal } from './components/ProfileSettingsModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
@@ -73,6 +74,7 @@ export const App: React.FC = () => {
   // Auth, Checkout, Legal & Compliance Modal State
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
@@ -93,7 +95,10 @@ export const App: React.FC = () => {
   useEffect(() => {
     let mounted = true;
 
-    const hydrateFromSession = async (sbUser: Parameters<typeof mapSupabaseUserToProfile>[0]) => {
+    const hydrateFromSession = async (
+      sbUser: Parameters<typeof mapSupabaseUserToProfile>[0],
+      redirectToDashboard = false
+    ) => {
       const baseProfile = mapSupabaseUserToProfile(sbUser);
       const cloud = await pullUserCloudRow(sbUser.id);
       if (!mounted) return;
@@ -105,18 +110,24 @@ export const App: React.FC = () => {
       }
       setUser(mergedProfile);
       localStorage.setItem('isd_user', JSON.stringify(mergedProfile));
+      if (redirectToDashboard) {
+        setActiveTab((prev) => (prev === 'auth' || prev === 'home' ? 'dashboard' : prev));
+      }
+      if (!mergedProfile.onboardingCompleted) {
+        setShowOnboarding(true);
+      }
     };
 
     supabase.auth.getSession().then(({ data }) => {
       if (mounted && data.session?.user) {
-        hydrateFromSession(data.session.user);
+        hydrateFromSession(data.session.user, false);
       }
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       if (event === 'SIGNED_IN' && session?.user) {
-        hydrateFromSession(session.user);
+        hydrateFromSession(session.user, true);
       } else if (event === 'SIGNED_OUT') {
         setUser((prev) => (prev?.id === 'demo-user-1' ? prev : null));
         if (localStorage.getItem('isd_user')) {
@@ -183,9 +194,32 @@ export const App: React.FC = () => {
 
   const handleSignOut = () => {
     setUser(null);
+    setShowOnboarding(false);
     localStorage.removeItem('isd_user');
     setActiveTab('home');
     void supabase.auth.signOut();
+  };
+
+  const handleOnboardingComplete = (updatedUser: UserProfile) => {
+    setUser(updatedUser);
+    setShowOnboarding(false);
+    localStorage.setItem('isd_user', JSON.stringify(updatedUser));
+    if (updatedUser.targetYear) {
+      localStorage.setItem('isd_filing_year', String(updatedUser.targetYear));
+    }
+    setActiveTab('dashboard');
+
+    if (updatedUser.id !== 'demo-user-1') {
+      void supabase.auth.updateUser({
+        data: {
+          full_name: updatedUser.name,
+          current_stamp: updatedUser.currentStamp,
+          target_year: updatedUser.targetYear,
+          onboarding_completed: true,
+        },
+      });
+      void pushUserCloudRow(updatedUser.id, updatedUser);
+    }
   };
 
   return (
@@ -280,6 +314,15 @@ export const App: React.FC = () => {
           onUpdateUser={handleUpdateUser}
           onSignOut={handleSignOut}
           onOpenCheckout={() => setCheckoutModalOpen(true)}
+        />
+      )}
+
+      {/* First-Time OAuth / Magic Link Onboarding Modal */}
+      {user && (
+        <OnboardingModal
+          isOpen={showOnboarding}
+          user={user}
+          onComplete={handleOnboardingComplete}
         />
       )}
 
