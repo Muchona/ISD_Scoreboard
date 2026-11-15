@@ -48,6 +48,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setMode(initialMode);
       setShowForgotPassword(false);
       setErrorMessage(null);
+      setStatusMessage(null);
     }
   }, [isOpen, initialMode]);
 
@@ -59,6 +60,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [targetYear, setTargetYear] = useState<number>(new Date().getFullYear());
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -154,12 +156,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
+  const handleOAuthSignIn = async () => {
     setErrorMessage(null);
+    setStatusMessage(null);
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: 'google',
         options: {
           redirectTo: window.location.href.split('#')[0],
         },
@@ -169,7 +172,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setIsLoading(false);
       }
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'OAuth sign-in failed.');
+      setErrorMessage(err instanceof Error ? err.message : 'Google sign-in failed.');
+      setIsLoading(false);
+    }
+  };
+
+  const handleMagicLinkSignIn = async () => {
+    setErrorMessage(null);
+    setStatusMessage(null);
+    if (!email.trim()) {
+      setErrorMessage('Enter your email address below first, then click Magic Link.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          emailRedirectTo: window.location.href.split('#')[0],
+        },
+      });
+      if (error) {
+        setErrorMessage(error.message);
+      } else {
+        setStatusMessage(`Magic link sent to ${email.trim()}. Check your inbox to sign in.`);
+      }
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Could not send magic link.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -324,10 +354,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </button>
             </div>
 
-            {/* Error Message */}
+            {/* Error / Status Message */}
             {errorMessage && (
               <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-800 text-red-900 dark:text-red-200 text-xs">
                 {errorMessage}
+              </div>
+            )}
+            {statusMessage && (
+              <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs">
+                {statusMessage}
               </div>
             )}
 
@@ -421,7 +456,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
-                    onClick={() => handleOAuthSignIn('google')}
+                    onClick={handleOAuthSignIn}
                     disabled={isLoading}
                     className="btn btn-secondary text-xs h-9 justify-center font-semibold"
                   >
@@ -448,14 +483,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => handleOAuthSignIn('apple')}
+                    onClick={handleMagicLinkSignIn}
                     disabled={isLoading}
                     className="btn btn-secondary text-xs h-9 justify-center font-semibold"
                   >
-                    <svg className="w-4 h-4 mr-1.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 1.01-2.87-.92.04-2.02.62-2.66 1.37-.56.65-1.06 1.71-.93 2.74 1.04.08 2.07-.54 2.58-1.24z" />
-                    </svg>
-                    <span>Apple</span>
+                    <Sparkles className="w-4 h-4 mr-1.5 text-emerald-500" />
+                    <span>Magic Link</span>
                   </button>
                 </div>
 
