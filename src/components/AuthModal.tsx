@@ -154,6 +154,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
+  const handleOAuthSignIn = async (provider: 'google' | 'apple') => {
+    setErrorMessage(null);
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.href.split('#')[0],
+        },
+      });
+      if (error) {
+        setErrorMessage(error.message);
+        setIsLoading(false);
+      }
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'OAuth sign-in failed.');
+      setIsLoading(false);
+    }
+  };
+
   const handleDemoSignIn = (role: 'applicant' | 'pro') => {
     setIsLoading(true);
     setTimeout(() => {
@@ -401,7 +421,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
-                    onClick={() => handleDemoSignIn('applicant')}
+                    onClick={() => handleOAuthSignIn('google')}
+                    disabled={isLoading}
                     className="btn btn-secondary text-xs h-9 justify-center font-semibold"
                   >
                     <svg className="w-4 h-4 mr-1.5" viewBox="0 0 24 24">
@@ -427,7 +448,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => handleDemoSignIn('pro')}
+                    onClick={() => handleOAuthSignIn('apple')}
+                    disabled={isLoading}
                     className="btn btn-secondary text-xs h-9 justify-center font-semibold"
                   >
                     <svg className="w-4 h-4 mr-1.5 fill-current" viewBox="0 0 24 24">
