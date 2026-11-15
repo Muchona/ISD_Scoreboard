@@ -24,6 +24,7 @@ import {
   pullUserCloudRow,
   pushUserCloudRow,
   applyCloudDossierState,
+  resetLocalDossierToBlank,
 } from './lib/supabase';
 import { ShieldCheck, Heart, ExternalLink } from 'lucide-react';
 
@@ -75,6 +76,7 @@ export const App: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [dossierRevision, setDossierRevision] = useState(0);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
@@ -105,9 +107,12 @@ export const App: React.FC = () => {
       const mergedProfile: UserProfile = cloud?.profile
         ? { ...baseProfile, ...cloud.profile, id: sbUser.id }
         : baseProfile;
-      if (cloud?.dossierState) {
+      if (cloud?.dossierState?.isd_scorecards) {
         applyCloudDossierState(cloud.dossierState);
+      } else {
+        resetLocalDossierToBlank(mergedProfile.targetYear || 2026);
       }
+      setDossierRevision((r) => r + 1);
       setUser(mergedProfile);
       localStorage.setItem('isd_user', JSON.stringify(mergedProfile));
       if (redirectToDashboard) {
@@ -168,11 +173,13 @@ export const App: React.FC = () => {
 
     if (loggedInUser.id !== 'demo-user-1') {
       const cloud = await pullUserCloudRow(loggedInUser.id);
-      if (cloud?.dossierState) {
+      if (cloud?.dossierState?.isd_scorecards) {
         applyCloudDossierState(cloud.dossierState);
       } else {
+        resetLocalDossierToBlank(loggedInUser.targetYear || 2026);
         await pushUserCloudRow(loggedInUser.id, loggedInUser);
       }
+      setDossierRevision((r) => r + 1);
     }
   };
 
@@ -196,6 +203,13 @@ export const App: React.FC = () => {
     setUser(null);
     setShowOnboarding(false);
     localStorage.removeItem('isd_user');
+    localStorage.removeItem('isd_scorecards');
+    localStorage.removeItem('isd_year_docs_archive');
+    localStorage.removeItem('isd_cover_letter_notes');
+    localStorage.removeItem('isd_periods');
+    localStorage.removeItem('isd_final_year_absences');
+    localStorage.removeItem('isd_guest_applicant_name');
+    setDossierRevision((r) => r + 1);
     setActiveTab('home');
     void supabase.auth.signOut();
   };
@@ -205,7 +219,8 @@ export const App: React.FC = () => {
     setShowOnboarding(false);
     localStorage.setItem('isd_user', JSON.stringify(updatedUser));
     if (updatedUser.targetYear) {
-      localStorage.setItem('isd_filing_year', String(updatedUser.targetYear));
+      resetLocalDossierToBlank(updatedUser.targetYear);
+      setDossierRevision((r) => r + 1);
     }
     setActiveTab('dashboard');
 
@@ -251,6 +266,7 @@ export const App: React.FC = () => {
         )}
         {activeTab === 'dashboard' && (
           <CitizenshipDashboard
+            key={`dash-${user?.id || 'guest'}-${dossierRevision}`}
             user={user}
             onNavigate={setActiveTab}
             onOpenAuth={handleOpenAuth}
@@ -261,6 +277,7 @@ export const App: React.FC = () => {
         )}
         {activeTab === 'vault' && (
           <ScorecardBento
+            key={`vault-${user?.id || 'guest'}-${dossierRevision}`}
             onGoToPricing={() => setActiveTab('pricing')}
             user={user}
             onOpenCheckout={() => setCheckoutModalOpen(true)}

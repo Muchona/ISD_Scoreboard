@@ -19,6 +19,8 @@ import { OFFICIAL_ISD_DOCUMENTS, ISD_OFFICIAL_URLS } from '../data/isdPointsTabl
 import { YearScorecard, ScorecardDocument, UserProfile } from '../types';
 import { MasterDossierModal } from './MasterDossierModal';
 import { extractPdfText, auditPdfContent, DocumentAuditResult } from '../utils/pdfAuditor';
+import { createBlankScorecards } from '../utils/blankScorecards';
+import { pushUserCloudRow } from '../lib/supabase';
 import { Loader2, Search, CheckCircle, ShieldAlert, FileCheck, Layers, RotateCcw } from 'lucide-react';
 
 interface ScorecardBentoProps {
@@ -408,6 +410,9 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
         return sanitized;
       } catch (e) {}
     }
+    if (user && user.id !== 'demo-user-1') {
+      return createBlankScorecards(applicationYear);
+    }
     return createInitialScorecards(applicationYear);
   });
 
@@ -428,7 +433,13 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
       archive[String(card.year)] = card.documents || [];
     }
     localStorage.setItem('isd_year_docs_archive', JSON.stringify(archive));
-  }, [scorecards]);
+    if (user && user.id !== 'demo-user-1') {
+      const timer = window.setTimeout(() => {
+        void pushUserCloudRow(user.id, user);
+      }, 600);
+      return () => window.clearTimeout(timer);
+    }
+  }, [scorecards, user]);
 
   // Dynamically extract the 5 reckonable years from the scorecards (e.g. [2026, 2025, 2024, 2023, 2022])
   const reckonableYears = scorecards.filter((c) => c.year > 0).map((c) => c.year);

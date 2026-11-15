@@ -1,5 +1,6 @@
 import { createClient, type User as SupabaseUser } from '@supabase/supabase-js';
 import type { UserProfile } from '../types';
+import { createBlankScorecards } from '../utils/blankScorecards';
 
 const supabaseUrl =
   import.meta.env.VITE_SUPABASE_URL || 'https://xkgusbogyomjexhclooj.supabase.co';
@@ -64,6 +65,16 @@ export function applyCloudDossierState(state: Record<string, string>): void {
       localStorage.setItem(key, state[key]);
     }
   }
+}
+
+export function resetLocalDossierToBlank(targetYear = 2026): void {
+  localStorage.removeItem('isd_year_docs_archive');
+  localStorage.removeItem('isd_cover_letter_notes');
+  localStorage.removeItem('isd_periods');
+  localStorage.removeItem('isd_final_year_absences');
+  localStorage.removeItem('isd_guest_applicant_name');
+  localStorage.setItem('isd_filing_year', String(targetYear));
+  localStorage.setItem('isd_scorecards', JSON.stringify(createBlankScorecards(targetYear)));
 }
 
 export async function pullUserCloudRow(userId: string): Promise<{
