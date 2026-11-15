@@ -21,6 +21,7 @@ export const DOSSIER_SYNC_KEYS = [
   'isd_year_docs_archive',
   'isd_periods',
   'isd_final_year_absences',
+  'isd_pathway',
   'isd_filing_year',
   'isd_cover_letter_notes',
   'isd_watermark_enabled',

@@ -308,7 +308,8 @@ export const CitizenshipDashboard: React.FC<CitizenshipDashboardProps> = ({
       .reduce((sum, p) => sum + (p.calculatedDays || 0), 0);
   }, [stampPeriods]);
 
-  const targetDays = 1825;
+  const isSpousalPathway = localStorage.getItem('isd_pathway') === 'spousal';
+  const targetDays = isSpousalPathway ? 1095 : 1825;
   const isDaysMet = totalDays >= targetDays;
   const daysPct = Math.min(100, Math.round((totalDays / targetDays) * 100));
 

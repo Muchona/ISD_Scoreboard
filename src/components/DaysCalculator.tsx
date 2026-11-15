@@ -41,7 +41,13 @@ export const DaysCalculator: React.FC<DaysCalculatorProps> = ({ onGoToVault }) =
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-  const [isSpousal, setIsSpousal] = useState<boolean>(false);
+  const [isSpousal, setIsSpousal] = useState<boolean>(() => {
+    return localStorage.getItem('isd_pathway') === 'spousal';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('isd_pathway', isSpousal ? 'spousal' : 'general');
+  }, [isSpousal]);
   const [finalYearAbsenceDays, setFinalYearAbsenceDays] = useState<number>(() => {
     const saved = localStorage.getItem('isd_final_year_absences');
     const parsed = saved ? parseInt(saved, 10) : NaN;
@@ -117,15 +123,24 @@ export const DaysCalculator: React.FC<DaysCalculatorProps> = ({ onGoToVault }) =
       }
 
       let effectiveStart = p.startDate;
+      let effectiveEnd = p.endDate;
       let isOverlapAdjusted = false;
       let overlapDays = 0;
 
+      // Clamp to statutory lookback window [statutoryStartDate, applicationDate]
+      if (statutoryStartDate && effectiveStart < statutoryStartDate) {
+        effectiveStart = statutoryStartDate;
+      }
+      if (applicationDate && effectiveEnd > applicationDate) {
+        effectiveEnd = applicationDate;
+      }
+
       // In official ISD calculation: if current start date <= latestCoveredDate from previous periods,
       // the overlapping days are already counted. Start date is adjusted to the day after latestCoveredDate.
-      if (latestCoveredDate && p.startDate <= latestCoveredDate) {
+      if (latestCoveredDate && effectiveStart <= latestCoveredDate) {
         isOverlapAdjusted = true;
-        const overlapEnd = p.endDate < latestCoveredDate ? p.endDate : latestCoveredDate;
-        overlapDays = calculateDaysBetween(p.startDate, overlapEnd);
+        const overlapEnd = effectiveEnd < latestCoveredDate ? effectiveEnd : latestCoveredDate;
+        overlapDays = calculateDaysBetween(effectiveStart, overlapEnd);
 
         // Effective start is day after latestCoveredDate
         const nextDay = new Date(latestCoveredDate);
@@ -134,13 +149,13 @@ export const DaysCalculator: React.FC<DaysCalculatorProps> = ({ onGoToVault }) =
       }
 
       let calculatedDays = 0;
-      if (effectiveStart <= p.endDate) {
-        calculatedDays = calculateDaysBetween(effectiveStart, p.endDate);
+      if (effectiveStart <= effectiveEnd) {
+        calculatedDays = calculateDaysBetween(effectiveStart, effectiveEnd);
       }
 
       // Update latest covered date if this period extends it
-      if (!latestCoveredDate || p.endDate > latestCoveredDate) {
-        latestCoveredDate = p.endDate;
+      if (effectiveEnd >= effectiveStart && (!latestCoveredDate || effectiveEnd > latestCoveredDate)) {
+        latestCoveredDate = effectiveEnd;
       }
 
       return {
@@ -152,7 +167,7 @@ export const DaysCalculator: React.FC<DaysCalculatorProps> = ({ onGoToVault }) =
         effectiveStartDate: isOverlapAdjusted ? effectiveStart : undefined,
       };
     });
-  }, [periods]);
+  }, [periods, statutoryStartDate, applicationDate]);
 
   // Total reckonable days
   const totalReckonableDays = useMemo(() => {
@@ -617,7 +632,7 @@ export const DaysCalculator: React.FC<DaysCalculatorProps> = ({ onGoToVault }) =
                 className="btn btn-secondary w-full"
               >
                 <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Celebrate 1,825-Day Milestone!</span>
+                <span>Celebrate {targetDays.toLocaleString()}-Day Milestone!</span>
               </button>
             )}
           </div>
