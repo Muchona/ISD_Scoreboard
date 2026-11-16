@@ -129,6 +129,13 @@ export const App: React.FC = () => {
       }
     });
 
+    // Clean up ?checkout=success|cancelled query params after returning from Stripe
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('checkout')) {
+      const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+      window.history.replaceState({}, '', cleanUrl);
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       if (event === 'SIGNED_IN' && session?.user) {

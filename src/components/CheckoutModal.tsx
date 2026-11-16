@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { UserProfile, SubscriptionDetails } from '../types';
+import { supabase } from '../lib/supabase';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'checkout' | 'authorizing' | 'success'>('checkout');
   const [authStepText, setAuthStepText] = useState('Connecting to Stripe network...');
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   // Keep cardholder name updated when user logs in
   React.useEffect(() => {
@@ -75,7 +77,52 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     return 'Card';
   };
 
-  const executePayment = (payerName: string) => {
+  const executePayment = async (payerName: string) => {
+    setCheckoutError(null);
+
+    if (!user) {
+      if (onOpenAuth) {
+        onClose();
+        onOpenAuth('signup');
+      } else {
+        setCheckoutError('Please sign in first to link your Pro subscription to your account.');
+      }
+      return;
+    }
+
+    // Real Supabase user: redirect to Stripe Hosted Checkout via Edge Function
+    if (user.id !== 'demo-user-1') {
+      setIsProcessing(true);
+      setStep('authorizing');
+      setAuthStepText('Creating secure Stripe Checkout session...');
+
+      try {
+        const returnUrl = `${window.location.origin}${window.location.pathname}`;
+        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+          body: { returnUrl },
+        });
+
+        if (error || !data?.url) {
+          throw new Error(
+            data?.error ||
+              error?.message ||
+              'Stripe checkout is not configured yet. Please add Stripe keys in Supabase Edge Function secrets.'
+          );
+        }
+
+        window.location.href = data.url;
+        return;
+      } catch (err) {
+        setIsProcessing(false);
+        setStep('checkout');
+        setCheckoutError(
+          err instanceof Error ? err.message : 'Unable to start Stripe Checkout.'
+        );
+        return;
+      }
+    }
+
+    // Demo user preview flow
     setIsProcessing(true);
     setStep('authorizing');
     setAuthStepText('Encrypting payment token via Stripe Elements...');
@@ -204,6 +251,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1">
+          {checkoutError && (
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-300 dark:border-red-800 text-red-900 dark:text-red-200 text-xs flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{checkoutError}</span>
+            </div>
+          )}
           {step === 'authorizing' ? (
             <div className="py-12 text-center space-y-4">
               <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800">
