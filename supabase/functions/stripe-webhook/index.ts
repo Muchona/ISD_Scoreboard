@@ -84,6 +84,7 @@ Deno.serve(async (req: Request) => {
         subscription: {
           plan: "pro",
           status: "active",
+          stripeCustomerId: typeof obj?.customer === "string" ? obj.customer : undefined,
           monthlyAmount: 5,
           renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             .toISOString()

@@ -14,6 +14,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { UserProfile } from '../types';
+import { supabase } from '../lib/supabase';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -40,6 +41,25 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showCancelSubConfirm, setShowCancelSubConfirm] = useState(false);
   const [cancelSubSuccess, setCancelSubSuccess] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
+
+  const handleOpenBillingPortal = async () => {
+    setPortalError(null);
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        body: { returnUrl: `${window.location.origin}${window.location.pathname}` },
+      });
+      if (error || !data?.url) {
+        throw new Error(data?.error || error?.message || 'Unable to open Stripe billing portal.');
+      }
+      window.location.href = data.url;
+    } catch (err) {
+      setPortalError(err instanceof Error ? err.message : 'Unable to open billing portal.');
+      setPortalLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -284,6 +304,25 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                         className="btn btn-sm bg-red-600 hover:bg-red-700 text-white font-bold text-xs h-7 px-3 rounded-lg shadow-xs"
                       >
                         Yes, Cancel Subscription
+                      </button>
+                    </div>
+                  </div>
+                ) : user.id !== 'demo-user-1' ? (
+                  <div className="space-y-2 pt-1">
+                    {portalError && (
+                      <p className="text-[11px] text-red-600 dark:text-red-400">{portalError}</p>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-slate-500">
+                        Manage card, invoices, or cancel anytime:
+                      </span>
+                      <button
+                        type="button"
+                        disabled={portalLoading}
+                        onClick={handleOpenBillingPortal}
+                        className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
+                      >
+                        {portalLoading ? 'Opening Stripe...' : 'Manage Billing (Stripe)'}
                       </button>
                     </div>
                   </div>
