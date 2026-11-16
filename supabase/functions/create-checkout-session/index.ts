@@ -53,6 +53,7 @@ Deno.serve(async (req: Request) => {
 
     const params = new URLSearchParams();
     params.set("mode", "subscription");
+    params.set("payment_method_types[0]", "card");
     params.set("line_items[0][price]", stripePriceId);
     params.set("line_items[0][quantity]", "1");
     params.set("client_reference_id", user.id);
