@@ -53,7 +53,7 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('bug_reports').insert({
+      const reportPayload = {
         user_id: user && user.id !== 'demo-user-1' ? user.id : null,
         contact_email: contactEmail.trim() || null,
         category,
@@ -61,11 +61,31 @@ export const ReportProblemModal: React.FC<ReportProblemModalProps> = ({
         active_tab: activeTab,
         page_url: window.location.href,
         user_agent: navigator.userAgent,
-      });
+      };
+
+      const { error } = await supabase.from('bug_reports').insert(reportPayload);
 
       if (error) {
         throw new Error(error.message);
       }
+
+      // Best-effort email notification to support@citizenscore.ie
+      supabase.functions
+        .invoke('report-problem', {
+          body: {
+            category: reportPayload.category,
+            contactEmail: reportPayload.contact_email,
+            description: reportPayload.description,
+            activeTab: reportPayload.active_tab,
+            pageUrl: reportPayload.page_url,
+            userAgent: reportPayload.user_agent,
+            userId: reportPayload.user_id,
+          },
+        })
+        .catch(() => {
+          // Report is already saved in bug_reports; ignore email notification errors
+        });
+
       setSubmitted(true);
     } catch (err) {
       setErrorMsg(
