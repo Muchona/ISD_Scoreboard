@@ -371,6 +371,9 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
 
   // Automated PDF Content Audit States
   const [isAuditingPdf, setIsAuditingPdf] = useState<boolean>(false);
+  const [auditProgressText, setAuditProgressText] = useState<string>(
+    'Auditing document transactions, legal dates, and applicant identity matching in memory...'
+  );
   const [pdfAuditResult, setPdfAuditResult] = useState<DocumentAuditResult | null>(null);
   const [pdfAuditError, setPdfAuditError] = useState<string | null>(null);
   const [showManualCategories, setShowManualCategories] = useState<boolean>(false);
@@ -557,11 +560,18 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
     let yearMismatchMsg: string | null = null;
     let detectedDocYearFromPdf: number | null = null;
 
-    // If file is a PDF, trigger instant automated deep content audit
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+    // Trigger instant automated deep content audit on PDFs & image scans (via local OCR)
+    if (
+      file.type === 'application/pdf' ||
+      file.name.toLowerCase().endsWith('.pdf') ||
+      file.type.startsWith('image/')
+    ) {
       setIsAuditingPdf(true);
+      setAuditProgressText(
+        'Auditing document transactions, legal dates, and applicant identity matching in memory...'
+      );
       try {
-        const text = await extractPdfText(file);
+        const text = await extractPdfText(file, (msg) => setAuditProgressText(msg));
         const targetYear = activeModalYear ?? applicationYear;
         const audit = auditPdfContent(text, targetYear, applicantName, file.name);
         setPdfAuditResult(audit);
@@ -1699,7 +1709,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                 <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 text-slate-800 dark:text-slate-200 text-xs flex items-center gap-2.5 animate-pulse">
                   <Loader2 className="w-4 h-4 text-emerald-600 animate-spin shrink-0" />
                   <span className="font-medium">
-                    Auditing PDF transactions, legal dates, and applicant identity matching in memory...
+                    {auditProgressText}
                   </span>
                 </div>
               )}

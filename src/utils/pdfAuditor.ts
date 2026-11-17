@@ -6,7 +6,19 @@ if (typeof window !== 'undefined') {
 }
 
 export interface DocumentAuditResult {
-  detectedType: 'BANK_STATEMENT' | 'REVENUE_EDS' | 'UTILITY_BILL' | 'PASSPORT' | 'DSP_STATEMENT' | 'MEDICAL_LETTER' | 'RESIDENTIAL_AFFIDAVIT' | 'UNKNOWN';
+  detectedType:
+    | 'BANK_STATEMENT'
+    | 'REVENUE_EDS'
+    | 'UTILITY_BILL'
+    | 'PASSPORT'
+    | 'DRIVING_LICENCE'
+    | 'IRP_CARD'
+    | 'PSC_CARD'
+    | 'NATIONAL_ID'
+    | 'DSP_STATEMENT'
+    | 'MEDICAL_LETTER'
+    | 'RESIDENTIAL_AFFIDAVIT'
+    | 'UNKNOWN';
   detectedIssuer?: string;
   detectedPlainLabel?: string;
   matchedTemplateName?: string;
@@ -45,13 +57,22 @@ export interface DocumentAuditResult {
 }
 
 /**
- * Extracts raw textual content from all pages of an uploaded PDF File
+ * Extracts raw textual content from all pages of an uploaded PDF File.
+ * If the PDF is a scanned image without an embedded text layer (< 50 chars),
+ * falls back to 100% client-side in-browser OCR via tesseract.js.
  */
-export async function extractPdfText(file: File): Promise<string> {
+export async function extractPdfText(
+  file: File,
+  onProgress?: (status: string) => void
+): Promise<string> {
+  if (file.type.startsWith('image/')) {
+    return extractImageText(file, onProgress);
+  }
+
   const arrayBuffer = await file.arrayBuffer();
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
   const pdfDoc = await loadingTask.promise;
-  
+
   let fullText = '';
   for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
     const page = await pdfDoc.getPage(pageNum);
@@ -63,7 +84,65 @@ export async function extractPdfText(file: File): Promise<string> {
     fullText += ` ${pageStrings}`;
   }
 
-  return fullText.replace(/\s+/g, ' ').trim();
+  const cleaned = fullText.replace(/\s+/g, ' ').trim();
+  if (cleaned.length >= 50 || typeof document === 'undefined') {
+    return cleaned;
+  }
+
+  // Scanned image PDF: render up to 3 pages locally and run client-side OCR
+  try {
+    onProgress?.('Scanned image PDF detected — loading local OCR engine...');
+    const { createWorker } = await import('tesseract.js');
+    const worker = await createWorker('eng');
+    let ocrText = '';
+    const pagesToScan = Math.min(pdfDoc.numPages, 3);
+    try {
+      for (let pageNum = 1; pageNum <= pagesToScan; pageNum++) {
+        onProgress?.(`Reading scanned page ${pageNum} of ${pagesToScan} locally...`);
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) continue;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const { data } = await worker.recognize(canvas);
+        if (data?.text) {
+          ocrText += ` ${data.text}`;
+        }
+      }
+    } finally {
+      await worker.terminate();
+    }
+    const cleanedOcr = ocrText.replace(/\s+/g, ' ').trim();
+    return cleanedOcr.length > cleaned.length ? cleanedOcr : cleaned;
+  } catch {
+    return cleaned;
+  }
+}
+
+/**
+ * Extracts text from a direct image upload (JPG/PNG/WebP) using local browser OCR.
+ */
+export async function extractImageText(
+  file: File,
+  onProgress?: (status: string) => void
+): Promise<string> {
+  if (typeof document === 'undefined') return '';
+  try {
+    onProgress?.('Reading uploaded image locally with in-browser OCR...');
+    const { createWorker } = await import('tesseract.js');
+    const worker = await createWorker('eng');
+    try {
+      const { data } = await worker.recognize(file);
+      return (data?.text || '').replace(/\s+/g, ' ').trim();
+    } finally {
+      await worker.terminate();
+    }
+  } catch {
+    return '';
+  }
 }
 
 /**
@@ -296,7 +375,7 @@ export function auditPdfContent(
     upperFile.includes('AFFIDAVIT') ||
     upperFile.includes('0092026');
 
-  // G. Check for Passport & Peace Commissioner Certification (handles scanned PDFs & common filename spellings)
+  // G. Check for Passport, Peace Commissioner, Driving Licence, IRP Card & PSC
   const isPeaceCommissioner =
     !isResidentialAffidavit &&
     (combined.includes('PEACE COMMISSIONER') ||
@@ -306,15 +385,51 @@ export function auditPdfContent(
       combined.includes('TRUE COPY OF THE ORIGINAL') ||
       combined.includes('CITZ-011') ||
       upperFile.includes('PEACE COMM'));
+  const hasPassportMrz = /P<[A-Z]{3}[A-Z<]{5,}/.test(upperText.replace(/\s+/g, ''));
   const isPassport =
     !isResidentialAffidavit &&
     (isPeaceCommissioner ||
+      hasPassportMrz ||
       upperFile.includes('PASSPORT') ||
       (combined.includes('PASSPORT') &&
         (combined.includes('NATIONALITY') ||
           combined.includes('DATE OF BIRTH') ||
           combined.includes('PASSPORT NO') ||
+          combined.includes('SURNAME') ||
           combined.includes('BIOMETRIC PAGE'))));
+  const isDrivingLicence =
+    !isPassport &&
+    !isResidentialAffidavit &&
+    (combined.includes('DRIVING LICENCE') ||
+      combined.includes('DRIVER LICENCE') ||
+      combined.includes('CEADUNAS TIOMANA') ||
+      combined.includes('CEADÚNAS TIOMÁNA') ||
+      combined.includes('NDLS') ||
+      combined.includes('LEARNER PERMIT') ||
+      upperFile.includes('LICENCE') ||
+      upperFile.includes('LICENSE'));
+  const isIRPCard =
+    !isPassport &&
+    !isResidentialAffidavit &&
+    (combined.includes('IRISH RESIDENCE PERMIT') ||
+      combined.includes('RESIDENCE PERMIT') ||
+      combined.includes('GNIB') ||
+      /\bIRP\b/.test(combined));
+  const isPSCCard =
+    !isPassport &&
+    !isResidentialAffidavit &&
+    (combined.includes('PUBLIC SERVICES CARD') ||
+      combined.includes('MYGOVID') ||
+      /\bPSC\b/.test(normalizedFile));
+  const isNationalId =
+    !isPassport &&
+    !isDrivingLicence &&
+    !isIRPCard &&
+    !isPSCCard &&
+    !isResidentialAffidavit &&
+    (combined.includes('IDENTITY CARD') ||
+      combined.includes('NATIONAL ID') ||
+      /I<[A-Z]{3}/.test(upperText.replace(/\s+/g, '')));
 
   if (isResidentialAffidavit) {
     detectedType = 'RESIDENTIAL_AFFIDAVIT';
@@ -332,6 +447,34 @@ export function auditPdfContent(
     matchedTemplateName = 'Current Valid In-Date Passport (Certified Colour Biometric Copy)';
     scorecardClassification = 'IDENTITY';
     pointsRecommended = 150;
+  } else if (isDrivingLicence) {
+    detectedType = 'DRIVING_LICENCE';
+    detectedIssuer = 'National Driver Licence Service (NDLS)';
+    detectedPlainLabel = 'Irish / International Driving Licence';
+    matchedTemplateName = 'Irish / International Driving Licence (Photo ID)';
+    scorecardClassification = 'IDENTITY';
+    pointsRecommended = 10;
+  } else if (isIRPCard) {
+    detectedType = 'IRP_CARD';
+    detectedIssuer = 'Immigration Service Delivery (IRP)';
+    detectedPlainLabel = 'Irish Residence Permit (IRP) Card';
+    matchedTemplateName = 'Irish Residence Permit (IRP) Card (In-Date)';
+    scorecardClassification = 'IDENTITY';
+    pointsRecommended = 25;
+  } else if (isPSCCard) {
+    detectedType = 'PSC_CARD';
+    detectedIssuer = 'Department of Social Protection (PSC)';
+    detectedPlainLabel = 'Public Services Card (PSC)';
+    matchedTemplateName = 'Public Services Card (PSC) / PPSN Confirmation';
+    scorecardClassification = 'IDENTITY';
+    pointsRecommended = 25;
+  } else if (isNationalId) {
+    detectedType = 'NATIONAL_ID';
+    detectedIssuer = 'National Identity Authority';
+    detectedPlainLabel = 'National Identity Card (EU / EEA)';
+    matchedTemplateName = 'National Identity Card (EU / EEA / Swiss compliant)';
+    scorecardClassification = 'IDENTITY';
+    pointsRecommended = 75;
   } else if (isRevenue) {
     detectedType = 'REVENUE_EDS';
     detectedIssuer = 'Revenue Commissioners (Ireland)';
