@@ -48,18 +48,18 @@ export const IsdCitation: React.FC<IsdCitationProps> = ({
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`group inline-flex items-center gap-1.5 px-3 h-7 text-xs font-medium rounded-full ${containerStyles} transition-all whitespace-nowrap shrink-0 select-none ${className}`}
+      className={`group inline-flex flex-wrap sm:flex-nowrap items-center gap-x-1.5 gap-y-0.5 px-3 py-1 sm:py-0 sm:h-7 min-h-7 max-w-full text-xs font-medium rounded-2xl sm:rounded-full ${containerStyles} transition-all whitespace-normal sm:whitespace-nowrap select-none ${className}`}
       title="View official rule on Department of Justice / ISD website"
     >
       {tag && (
         <>
-          <span className={`font-mono text-[10px] font-bold uppercase tracking-wider ${tagColor}`}>
+          <span className={`font-mono text-[10px] font-bold uppercase tracking-wider shrink-0 ${tagColor}`}>
             {tag}
           </span>
-          <span className={`${dotColor} text-[10px]`}>•</span>
+          <span className={`${dotColor} text-[10px] shrink-0`}>•</span>
         </>
       )}
-      <span className="truncate">{title}</span>
+      <span className="min-w-0 break-words sm:truncate">{title}</span>
       <ExternalLink className={`w-3 h-3 ${iconColor} opacity-75 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0`} />
     </a>
   );

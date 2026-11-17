@@ -76,7 +76,7 @@
 @layer components {
   /* Surfaces: Crisp high-contrast in Light Mode + White Neon Halo in Dark Mode */
   .card {
-    @apply rounded-2xl border border-slate-300 ring-1 ring-slate-900/[0.04] bg-white
+    @apply rounded-2xl border border-slate-300 ring-1 ring-slate-900/[0.04] bg-white min-w-0 max-w-full overflow-hidden
            shadow-[0_2px_6px_rgba(15,23,42,0.05),0_12px_28px_-6px_rgba(15,23,42,0.08)]
            dark:ring-0 dark:border-white/25 dark:bg-obsidian-800
            dark:shadow-[0_0_36px_rgba(255,255,255,0.22),0_0_12px_rgba(255,255,255,0.38)];
