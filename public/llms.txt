@@ -15,6 +15,6 @@
 - **Section 15C Final-Year Absence Limit**: Up to 70 days outside Ireland in the 365 days immediately preceding the application date (up to 100 days only with documented exceptional work, medical, or family circumstances).
 
 ## URL & Pricing
-- Website: https://citizenscore.ie/
+- Website: https://www.citizenscore.ie/
 - Free Community Tier: €0 forever (full 1,825/1,095-day calculator, Section 15C validator, official ISD links, and Identity + Year 5 scorecard trial).
 - CitizenScore Pro Vault: €5.00/month (unlocks all 5 reckonable years, automated PDF watermarking, cloud progress sync, and Master Dossier export).

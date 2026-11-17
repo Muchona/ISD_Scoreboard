@@ -20,4 +20,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://citizenscore.ie/sitemap.xml
+Sitemap: https://www.citizenscore.ie/sitemap.xml
