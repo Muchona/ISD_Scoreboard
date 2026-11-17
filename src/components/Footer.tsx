@@ -106,8 +106,16 @@ export const Footer: React.FC<FooterProps> = ({
 
             <div className="pt-2 text-xs text-slate-500 space-y-1">
               <p className="flex items-center gap-1.5 font-medium">
-                <Mail className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Contact: support@citizenscore.ie</span>
+                <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>
+                  Contact:{' '}
+                  <a
+                    href="mailto:support@citizenscore.ie"
+                    className="text-emerald-700 dark:text-emerald-400 hover:underline font-semibold"
+                  >
+                    support@citizenscore.ie
+                  </a>
+                </span>
               </p>
               <p className="text-[11px] text-slate-400">
                 Response time: Within 24 business hours (Monday – Friday)
