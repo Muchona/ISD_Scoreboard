@@ -1,11 +1,103 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en-IE" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=2" />
     <link rel="shortcut icon" type="image/svg+xml" href="./favicon.svg?v=2" />
-    <title>CitizenScore.ie — Irish Citizenship (ISD) Scorecard & Vault</title>
+    <link rel="apple-touch-icon" href="./logo.png" />
+    <title>CitizenScore.ie — Irish Citizenship (ISD Form 8) 150-Point Scorecard &amp; 1,825-Day Calculator</title>
+    <meta name="description" content="Calculate your 1,825 reckonable residency days (or 1,095 days for Spouse of an Irish Citizen), track your 150-point ISD Form 8 identity and Type A/Type B proofs, and watermark naturalisation PDFs 100% locally in your browser." />
+    <meta name="keywords" content="Irish citizenship calculator, ISD Form 8 scorecard, 150 point rule Ireland citizenship, reckonable residence calculator Ireland, Stamp 4 naturalisation Ireland, Section 15C 70 day absence rule, CitizenScore.ie" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="geo.region" content="IE" />
+    <meta name="geo.placename" content="Ireland" />
+    <meta name="theme-color" content="#0B1220" />
+    <link rel="canonical" href="https://citizenscore.ie/" />
+    <link rel="alternate" hreflang="en-ie" href="https://citizenscore.ie/" />
+    <link rel="alternate" hreflang="x-default" href="https://citizenscore.ie/" />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CitizenScore.ie" />
+    <meta property="og:locale" content="en_IE" />
+    <meta property="og:url" content="https://citizenscore.ie/" />
+    <meta property="og:title" content="CitizenScore.ie — Irish Citizenship (ISD Form 8) Scorecard &amp; Residency Calculator" />
+    <meta property="og:description" content="Track your 1,825 reckonable residency days, verify 150 points per year (Type A + Type B proofs), and watermark PDFs locally in your browser." />
+    <meta property="og:image" content="https://citizenscore.ie/pro-card.png" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CitizenScore.ie — Irish Citizenship (ISD Form 8) Scorecard &amp; Calculator" />
+    <meta name="twitter:description" content="Free 1,825-day Irish reckonable residency calculator + Form 8 150-point scorecard &amp; in-browser PDF watermarker." />
+    <meta name="twitter:image" content="https://citizenscore.ie/pro-card.png" />
+
+    <!-- AEO / GEO Structured Data (Schema.org JSON-LD: WebApplication + Organization + FAQPage) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://citizenscore.ie/#app",
+            "name": "CitizenScore.ie",
+            "url": "https://citizenscore.ie/",
+            "applicationCategory": "ReferenceApplication",
+            "operatingSystem": "All",
+            "inLanguage": "en-IE",
+            "areaServed": {
+              "@type": "Country",
+              "name": "Ireland"
+            },
+            "description": "Self-service Irish naturalisation (Form 8) 150-point scorecard tracker, 1,825-day / 1,095-day reckonable residency calculator, and client-side PDF watermarker calibrated to Immigration Service Delivery (ISD) guidelines.",
+            "offers": [
+              {
+                "@type": "Offer",
+                "name": "Free Community Tier",
+                "price": "0",
+                "priceCurrency": "EUR"
+              },
+              {
+                "@type": "Offer",
+                "name": "CitizenScore Pro Vault",
+                "price": "5.00",
+                "priceCurrency": "EUR"
+              }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://citizenscore.ie/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How many points are required for Irish citizenship under the ISD Form 8 scorecard?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Applicants must reach 150 points for Identity Verification (proven once, e.g. a valid passport carries 150 points) and 150 points for each reckonable residency year made up of 1 Type A document (100 points, such as an Employment Detail Summary or P60) plus 1 Type B document (50 points, such as a utility bill or RTB tenancy letter)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How many days of reckonable residence are required for Irish naturalisation?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Standard applicants need 1,825 reckonable days (5 years) within the preceding 9 years, including 365 continuous days immediately before the application date. Spouses or civil partners of Irish citizens need 1,095 reckonable days (3 years) within the preceding 5 years."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What is the Section 15C final-year absence rule for Irish citizenship?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Under Section 15C of the Irish Nationality and Citizenship Act, applicants are permitted up to 70 days of absence from Ireland in the final 12 months immediately preceding the application date (with up to 30 additional days allowed only in exceptional circumstances, up to 100 days maximum)."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">

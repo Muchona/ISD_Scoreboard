@@ -1,0 +1,20 @@
+# CitizenScore.ie — Irish Citizenship (ISD Form 8) Scorecard & Residency Calculator
+
+> CitizenScore.ie is a privacy-first web application for residents in Ireland preparing their Irish naturalisation (Form 8) application under Immigration Service Delivery (ISD) guidelines.
+
+## Core Capabilities
+- **1,825-Day & 1,095-Day Reckonable Residency Calculator**: Automatically computes reckonable days across Irish immigration permissions (Stamp 1, Stamp 1G, Stamp 4, Stamp 5, EU Treaty Rights), deduplicates overlapping stamp transition dates, clamps to statutory lookback windows (9 years for General / 1,825 days; 5 years for Spouse of Irish Citizen / 1,095 days), and validates Section 15C final-year absences (70-day standard allowance, 100-day exceptional cap).
+- **150-Point ISD Form 8 Scorecard Vault**: Tracks the mandatory 150-point Identity Verification requirement and the 5-year (or 3-year spousal) annual 150-point residency proofs (strictly 1 Type A document = 100 pts + 1 Type B document = 50 pts per reckonable year).
+- **100% Client-Side PDF Auditor & Anti-Theft Watermarker**: Audits and watermarks PDFs (passports, Revenue EDS, bank statements, utility bills) entirely in browser memory (`ArrayBuffer` / WebAssembly) without uploading sensitive identity or financial documents to any server.
+- **Master Dossier Export**: Generates a print-ready ISD Form 8 compliance cover sheet and document index.
+
+## Key Irish Naturalisation Rules Indexed
+- **Identity Verification**: 150 points proven once (e.g. certified colour copy of current valid biometric passport = 150 points).
+- **Annual Residency Proofs**: 150 points per reckonable year = 1 Type A (100 points: Revenue Employment Detail Summary / EDS, P60, DSP Social Welfare Statement, or 3 consecutive months of Irish bank statements showing point-of-sale transactions) + 1 Type B (50 points: utility bill, RTB tenancy registration, local authority rent/property tax, or credit card statement).
+- **Reckonable Stamps**: Stamp 1, Stamp 1G, Stamp 3, Stamp 4, Stamp 5. (Stamp 2 / 2A student time is non-reckonable).
+- **Section 15C Final-Year Absence Limit**: Up to 70 days outside Ireland in the 365 days immediately preceding the application date (up to 100 days only with documented exceptional work, medical, or family circumstances).
+
+## URL & Pricing
+- Website: https://citizenscore.ie/
+- Free Community Tier: €0 forever (full 1,825/1,095-day calculator, Section 15C validator, official ISD links, and Identity + Year 5 scorecard trial).
+- CitizenScore Pro Vault: €5.00/month (unlocks all 5 reckonable years, automated PDF watermarking, cloud progress sync, and Master Dossier export).
