@@ -548,6 +548,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
 
   const handleModalFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     setModalUploadFile(file);
@@ -1387,8 +1388,9 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
 
                         <button
                           onClick={() => handleRemoveDoc(card.year, doc.id)}
-                          className="rounded-md p-1 text-base leading-none text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 shrink-0 mt-0.5"
+                          className="rounded-md p-1.5 text-base leading-none text-slate-500 sm:text-slate-400 opacity-100 sm:opacity-0 transition sm:group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 shrink-0 mt-0.5"
                           title="Remove document"
+                          aria-label="Remove document"
                         >
                           ×
                         </button>
@@ -1647,16 +1649,17 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
               </label>
               
               <input
+                id="modal-file-upload"
                 type="file"
                 ref={modalFileInputRef}
                 onChange={handleModalFileSelect}
-                accept=".pdf,image/png,image/jpeg"
-                className="hidden"
+                accept="application/pdf,.pdf,image/png,image/jpeg,image/*"
+                className="sr-only"
               />
 
-              <div
-                onClick={() => modalFileInputRef.current?.click()}
-                className="border-2 border-dashed border-slate-300 dark:border-white/15 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-xl p-4 text-center cursor-pointer bg-slate-50/60 dark:bg-white/[0.02] hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 transition-all group"
+              <label
+                htmlFor="modal-file-upload"
+                className="block border-2 border-dashed border-slate-300 dark:border-white/15 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-xl p-4 text-center cursor-pointer bg-slate-50/60 dark:bg-white/[0.02] hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 transition-all group"
               >
                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                   <Upload className="w-5 h-5" />
@@ -1680,7 +1683,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                     </p>
                   </div>
                 )}
-              </div>
+              </label>
 
               {/* Downloadable ISD Residential Proof Affidavit (Citz-009/2026) Helper */}
               {activeModalYear > 0 && (
