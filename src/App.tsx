@@ -105,6 +105,7 @@ export const App: React.FC = () => {
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [dossierRevision, setDossierRevision] = useState(0);
+  const hydratedUserIdRef = React.useRef<string | null>(null);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
@@ -130,6 +131,10 @@ export const App: React.FC = () => {
       sbUser: Parameters<typeof mapSupabaseUserToProfile>[0],
       redirectToDashboard = false
     ) => {
+      // Skip re-hydrating & remounting components when the same user returns from background (e.g. mobile file picker)
+      if (hydratedUserIdRef.current === sbUser.id) return;
+      hydratedUserIdRef.current = sbUser.id;
+
       const baseProfile = mapSupabaseUserToProfile(sbUser);
       const cloud = await pullUserCloudRow(sbUser.id);
       if (!mounted) return;
@@ -170,6 +175,7 @@ export const App: React.FC = () => {
       if (event === 'SIGNED_IN' && session?.user) {
         hydrateFromSession(session.user, true);
       } else if (event === 'SIGNED_OUT') {
+        hydratedUserIdRef.current = null;
         setUser((prev) => (prev?.id === 'demo-user-1' ? prev : null));
         if (localStorage.getItem('isd_user')) {
           try {
@@ -208,6 +214,7 @@ export const App: React.FC = () => {
     setActiveTab('dashboard'); // Direct to Citizenship Dashboard upon logging in
 
     if (loggedInUser.id !== 'demo-user-1') {
+      hydratedUserIdRef.current = loggedInUser.id;
       const cloud = await pullUserCloudRow(loggedInUser.id);
       if (cloud?.dossierState?.isd_scorecards) {
         applyCloudDossierState(cloud.dossierState);
