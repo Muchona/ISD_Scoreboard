@@ -196,6 +196,33 @@ export const Footer: React.FC<FooterProps> = ({
                   <span>Pro Membership (€5/mo)</span>
                 </button>
               </li>
+              <li className="pt-2 border-t border-slate-200/70 dark:border-white/5">
+                <a
+                  href="/150-point-rule-irish-citizenship.html"
+                  className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 text-left"
+                >
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
+                  <span>150-Point Rule Guide</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/irish-citizenship-1825-day-calculator.html"
+                  className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 text-left"
+                >
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
+                  <span>1,825-Day Residency Guide</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/70-day-absence-rule-ireland.html"
+                  className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 text-left"
+                >
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
+                  <span>70-Day Absence Guide</span>
+                </a>
+              </li>
             </ul>
           </div>
 
