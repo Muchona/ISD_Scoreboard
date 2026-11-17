@@ -156,6 +156,56 @@ const IRISH_MERCHANTS = [
   'AMZNMKTPLACE', 'AMAZON', 'PAYPAL', 'STREET', 'ROAD', 'DUBLIN', 'CORK', 'GALWAY', 'LIMERICK', 'MONAGHAN'
 ];
 
+const MONTH_MAP: Record<string, number> = {
+  JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
+  JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
+};
+
+function extractIdentityExpiryDate(upperText: string): Date | null {
+  const compact = upperText.replace(/\s+/g, '');
+  // 1. ICAO 9303 Passport MRZ line 2: <doc9><chk1><nat3><dob6><chk1><sex1><expYYMMDD>
+  const mrzMatch = compact.match(/[A-Z0-9<]{9}\d[A-Z<]{3}\d{6}\d[MFX<](\d{2})(\d{2})(\d{2})\d/);
+  if (mrzMatch) {
+    const yy = parseInt(mrzMatch[1], 10);
+    const mm = parseInt(mrzMatch[2], 10) - 1;
+    const dd = parseInt(mrzMatch[3], 10);
+    const fullYear = yy >= 70 ? 1900 + yy : 2000 + yy;
+    const d = new Date(fullYear, mm, dd);
+    if (!isNaN(d.getTime()) && mm >= 0 && mm <= 11 && dd >= 1 && dd <= 31) {
+      return d;
+    }
+  }
+
+  // 2. Printed "DATE OF EXPIRY / EXPIRY DATE / VALID UNTIL" followed by DD MMM YYYY or DD.MM.YYYY
+  const labelRegex = /(?:DATE OF EXPIRY|EXPIRY DATE|VALID UNTIL|DATE OF EXP|EXPIRES)[:\s]*([0-9]{1,2}[\s./-](?:[A-Z]{3}|[0-9]{1,2})[\s./-](?:20[0-9]{2}|[0-9]{2}))/g;
+  let match: RegExpExecArray | null;
+  while ((match = labelRegex.exec(upperText)) !== null) {
+    const raw = match[1].trim();
+    const textMonth = raw.match(/^(\d{1,2})[\s./-]+([A-Z]{3})[\s./-]+(\d{2,4})$/);
+    if (textMonth) {
+      const dd = parseInt(textMonth[1], 10);
+      const mm = MONTH_MAP[textMonth[2]];
+      const yrRaw = parseInt(textMonth[3], 10);
+      const yyyy = yrRaw < 100 ? 2000 + yrRaw : yrRaw;
+      if (mm !== undefined) {
+        const d = new Date(yyyy, mm, dd);
+        if (!isNaN(d.getTime())) return d;
+      }
+    }
+    const numDate = raw.match(/^(\d{1,2})[\s./-]+(\d{1,2})[\s./-]+(\d{2,4})$/);
+    if (numDate) {
+      const dd = parseInt(numDate[1], 10);
+      const mm = parseInt(numDate[2], 10) - 1;
+      const yrRaw = parseInt(numDate[3], 10);
+      const yyyy = yrRaw < 100 ? 2000 + yrRaw : yrRaw;
+      const d = new Date(yyyy, mm, dd);
+      if (!isNaN(d.getTime()) && mm >= 0 && mm <= 11) return d;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Comprehensive Form 8 Document Auditor
  * Evaluates both the extracted in-browser PDF text and the uploaded file metadata
@@ -809,9 +859,54 @@ export function auditPdfContent(
     recommendations.push(
       '⚠️ Exceptional Fallback Only: ISD accepts Citz-009 affidavits only when standard 150-point Type A/B proofs cannot reasonably be obtained. Ensure it is signed in front of a Solicitor, Commissioner for Oaths, Peace Commissioner, or Notary Public.'
     );
-  } else if (detectedType === 'PASSPORT') {
-    summaryMessage = `Full 150-Point Identity Verification • Certified Biometric Passport`;
-    status = 'PASSED';
+  } else if (
+    detectedType === 'PASSPORT' ||
+    detectedType === 'DRIVING_LICENCE' ||
+    detectedType === 'IRP_CARD' ||
+    detectedType === 'PSC_CARD' ||
+    detectedType === 'NATIONAL_ID'
+  ) {
+    const expiryDate = extractIdentityExpiryDate(upperText);
+    if (expiryDate) {
+      const daysLeft = Math.floor((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      const expiryStr = expiryDate.toISOString().split('T')[0];
+
+      if (daysLeft < 0) {
+        if (detectedType === 'PASSPORT' && daysLeft >= -365) {
+          matchedTemplateName = 'Expired Passport (Expired less than 365 days)';
+          detectedPlainLabel = 'Expired Passport (< 365 days)';
+          pointsRecommended = 75;
+          status = 'WARNING';
+          summaryMessage = `Expired Passport (${expiryStr}) • Worth 75 pts (Secondary ID Required)`;
+          reasons.push(`Passport expired on ${expiryStr} (within 365 days). Under ISD rules it carries 75 pts instead of 150 pts.`);
+          recommendations.push('Add secondary ID proofs totaling 75+ pts (e.g. National ID, IRP Card, PSC, or Driving Licence), or renew your passport.');
+        } else {
+          pointsRecommended = 0;
+          status = 'WARNING';
+          summaryMessage = `Expired Identity Document (${expiryStr}) • 0 pts`;
+          reasons.push(`Document expired on ${expiryStr} and is no longer valid for ISD Form 8 identity points.`);
+          recommendations.push('Upload a current in-date passport or valid Irish/EU identity document.');
+        }
+      } else if (daysLeft < 180) {
+        status = 'WARNING';
+        summaryMessage = `${detectedPlainLabel || 'Identity Document'} Expiring Soon (${daysLeft} days left)`;
+        reasons.push(`Expiry date ${expiryStr} is less than 6 months away (${daysLeft} days remaining).`);
+        recommendations.push('Your document is valid today, but because ISD naturalisation processing takes 12–19+ months, consider renewing it before/during your application.');
+      } else {
+        status = 'PASSED';
+        summaryMessage =
+          detectedType === 'PASSPORT'
+            ? `Full 150-Point Identity Verification • Valid Biometric Passport (Exp. ${expiryStr})`
+            : `Valid Identity Proof (${pointsRecommended} pts) • ${detectedPlainLabel} (Exp. ${expiryStr})`;
+        reasons.push(`Document expiry verified: ${expiryStr} (${Math.floor(daysLeft / 30)} months remaining).`);
+      }
+    } else {
+      status = 'PASSED';
+      summaryMessage =
+        detectedType === 'PASSPORT'
+          ? `Full 150-Point Identity Verification • Certified Biometric Passport`
+          : `Valid Identity Proof (${pointsRecommended} pts) • ${detectedPlainLabel}`;
+    }
   } else {
     status = 'WARNING';
     summaryMessage = `Unrecognized Document Format • Manual Review Recommended`;
