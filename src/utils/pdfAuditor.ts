@@ -296,22 +296,25 @@ export function auditPdfContent(
     upperFile.includes('AFFIDAVIT') ||
     upperFile.includes('0092026');
 
-  // G. Check for Passport & Peace Commissioner Certification
+  // G. Check for Passport & Peace Commissioner Certification (handles scanned PDFs & common filename spellings)
   const isPeaceCommissioner =
     !isResidentialAffidavit &&
     (combined.includes('PEACE COMMISSIONER') ||
+      combined.includes('PEACE COMMISIONER') ||
+      combined.includes('COMMISSIONER FOR OATHS') ||
       combined.includes('CERTIFICATION OF PASSPORT') ||
       combined.includes('TRUE COPY OF THE ORIGINAL') ||
-      combined.includes('CITZ-011'));
+      combined.includes('CITZ-011') ||
+      upperFile.includes('PEACE COMM'));
   const isPassport =
     !isResidentialAffidavit &&
     (isPeaceCommissioner ||
+      upperFile.includes('PASSPORT') ||
       (combined.includes('PASSPORT') &&
         (combined.includes('NATIONALITY') ||
           combined.includes('DATE OF BIRTH') ||
           combined.includes('PASSPORT NO') ||
-          combined.includes('BIOMETRIC PAGE') ||
-          upperFile.includes('PASSPORT'))));
+          combined.includes('BIOMETRIC PAGE'))));
 
   if (isResidentialAffidavit) {
     detectedType = 'RESIDENTIAL_AFFIDAVIT';
