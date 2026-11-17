@@ -2246,8 +2246,8 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-3 border-t border-slate-200 dark:border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="pt-3 border-t border-slate-200 dark:border-white/[0.08] flex flex-col gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                   Document Watermark:
                 </span>
@@ -2312,7 +2312,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                             handleAddDocToYear(smartTargetYear, smartTemplate);
                           }
                         }}
-                        className="btn btn-sm btn-primary font-bold text-xs"
+                        className="btn btn-sm btn-primary font-bold text-xs flex-1 h-auto min-h-9 py-2 whitespace-normal text-center"
                       >
                         <Check className="w-3.5 h-3.5 shrink-0" />
                         <span>
@@ -2332,7 +2332,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                     setShowAllOfficialCategories(false);
                     setDspDualChoice('TYPE_A');
                   }}
-                  className="btn btn-sm btn-secondary"
+                  className="btn btn-sm btn-secondary shrink-0"
                 >
                   Close
                 </button>
