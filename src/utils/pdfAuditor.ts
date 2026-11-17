@@ -132,17 +132,23 @@ export function auditPdfContent(
       !upperFile.includes('TV'));
   const isUlsterBank = combined.includes('ULSTER BANK');
 
+  const isExplicitUtilityFile =
+    /\b(UTILITY|BILL|WASTE|WAST|MCELVANEY|ELECTRIC|GAS|BROADBAND|TV|TELEVISION|COUNCIL|LPT|RTB)\b/.test(normalizedFile);
+  const isExplicitBankFile =
+    !isExplicitUtilityFile &&
+    /\b(BANK|STATEMENT|PTSB|AIB|BOI|REVOLUT)\b/.test(normalizedFile);
+
   const isBankStatement =
-    isPTSB ||
-    isBOI ||
-    isAIB ||
-    isRevolut ||
-    isAnPostMoney ||
-    isUlsterBank ||
-    combined.includes('BANK STATEMENT') ||
-    combined.includes('STATEMENT OF ACCOUNT') ||
-    combined.includes('ACCOUNT STATEMENT') ||
-    (upperText.includes('BALANCE') && upperText.includes('ACCOUNT NUMBER'));
+    !isExplicitUtilityFile &&
+    (isExplicitBankFile ||
+      isPTSB ||
+      isBOI ||
+      isAIB ||
+      isRevolut ||
+      isAnPostMoney ||
+      isUlsterBank ||
+      combined.includes('BANK STATEMENT') ||
+      combined.includes('ACCOUNT STATEMENT'));
 
   // B. Check for Department of Social Protection (DSP / Social Welfare)
   const isDSP =
@@ -230,50 +236,48 @@ export function auditPdfContent(
     upperFile.includes('COUNCIL');
 
   const isUtility =
-    isElectricIreland ||
-    isBordGais ||
-    isEnergia ||
-    isAirtricity ||
-    isPinergy ||
-    isFlogas ||
-    isPrepayPower ||
-    isUisce ||
-    isWasteUtility ||
-    isBroadband ||
-    isRTB ||
-    isTVLicence ||
-    isOfficialCorrespondence ||
-    combined.includes('UTILITY BILL') ||
-    combined.includes('BILLING PERIOD') ||
-    combined.includes('ELECTRICITY BILL') ||
-    combined.includes('GAS BILL') ||
-    combined.includes('MPRN') ||
-    combined.includes('GPRN') ||
-    upperFile.includes('UTILITY') ||
-    upperFile.includes('BILL');
+    !isExplicitBankFile &&
+    (isElectricIreland ||
+      isBordGais ||
+      isEnergia ||
+      isAirtricity ||
+      isPinergy ||
+      isFlogas ||
+      isPrepayPower ||
+      isUisce ||
+      isWasteUtility ||
+      isBroadband ||
+      isRTB ||
+      isTVLicence ||
+      isOfficialCorrespondence ||
+      combined.includes('UTILITY BILL') ||
+      combined.includes('BILLING PERIOD') ||
+      combined.includes('ELECTRICITY BILL') ||
+      combined.includes('GAS BILL') ||
+      combined.includes('MPRN') ||
+      combined.includes('GPRN') ||
+      upperFile.includes('UTILITY') ||
+      upperFile.includes('BILL'));
 
   // E. Check for GP / Doctor / Medical Practice Attendance Letters (Type B - 50 pts)
+  // Guarded with !isBankStatement so pharmacy/clinic card transactions on a bank statement never misclassify the statement as a GP letter
   const isMedical =
-    combined.includes('GP LETTER') ||
-    combined.includes('GP') ||
-    combined.includes('FAMILY PRACTICE') ||
-    combined.includes('MEDICAL PRACTICE') ||
-    combined.includes('SURGERY') ||
-    combined.includes('CLINIC') ||
-    combined.includes('HOSPITAL') ||
-    combined.includes('HEALTH CENTRE') ||
-    combined.includes('REGISTERED PATIENT') ||
-    combined.includes('APPOINTMENT') ||
-    combined.includes('PATIENT TYPE') ||
-    combined.includes('HSE') ||
-    combined.includes('CASTLE MEADOW') ||
-    combined.includes('DR AOIFE') ||
-    combined.includes('DR CORA') ||
-    combined.includes('MICGP') ||
-    combined.includes('MB BCH') ||
-    upperFile.includes('GP') ||
-    upperFile.includes('DOCTOR') ||
-    upperFile.includes('MEDICAL');
+    !isBankStatement &&
+    !isUtility &&
+    (combined.includes('GP LETTER') ||
+      combined.includes('GENERAL PRACTITIONER') ||
+      combined.includes('FAMILY PRACTICE') ||
+      combined.includes('MEDICAL PRACTICE') ||
+      combined.includes('MEDICAL CENTRE') ||
+      combined.includes('HEALTH CENTRE') ||
+      combined.includes('REGISTERED PATIENT') ||
+      combined.includes('PATIENT TYPE') ||
+      combined.includes('CASTLE MEADOW') ||
+      combined.includes('DR AOIFE') ||
+      combined.includes('DR CORA') ||
+      combined.includes('MICGP') ||
+      combined.includes('MB BCH') ||
+      /\b(GP|DOCTOR|MEDICAL|HOSPITAL|CLINIC)\b/.test(normalizedFile));
 
   // F. Check for Residential Proof Affidavit (Form Citz-009/2026) before Passport (since both mention Peace Commissioner)
   const isResidentialAffidavit =
