@@ -15,6 +15,7 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { TermsModal } from './components/TermsModal';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
+import { ReportProblemModal } from './components/ReportProblemModal';
 import { Footer } from './components/Footer';
 import OnyxBadge from './components/OnyxBadge';
 import { ThemeMode, UserProfile } from './types';
@@ -108,6 +109,7 @@ export const App: React.FC = () => {
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   // Synchronize 'dark' class on HTML root element
   useEffect(() => {
@@ -413,6 +415,15 @@ export const App: React.FC = () => {
           window.location.reload();
         }}
         onOpenAuth={handleOpenAuth}
+        onOpenReportProblem={() => setReportModalOpen(true)}
+      />
+
+      {/* Report a Problem Modal */}
+      <ReportProblemModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        user={user}
+        activeTab={activeTab}
       />
     </div>
   );

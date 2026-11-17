@@ -13,6 +13,7 @@ import {
   Globe,
   Award,
   ChevronRight,
+  Bug,
 } from 'lucide-react';
 import { ISD_OFFICIAL_URLS } from '../data/isdPointsTable';
 import OnyxBadge from './OnyxBadge';
@@ -23,6 +24,7 @@ interface FooterProps {
   onOpenTerms?: () => void;
   onOpenCookieSettings?: () => void;
   onOpenAuth?: (mode?: 'signin' | 'signup') => void;
+  onOpenReportProblem?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -31,6 +33,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenTerms,
   onOpenCookieSettings,
   onOpenAuth,
+  onOpenReportProblem,
 }) => {
   const currentYear = new Date().getFullYear();
 
@@ -120,6 +123,16 @@ export const Footer: React.FC<FooterProps> = ({
               <p className="text-[11px] text-slate-400">
                 Response time: Within 24 business hours (Monday – Friday)
               </p>
+              {onOpenReportProblem && (
+                <button
+                  type="button"
+                  onClick={onOpenReportProblem}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  <Bug className="w-3.5 h-3.5" />
+                  <span>Report a Problem</span>
+                </button>
+              )}
             </div>
           </div>
 
