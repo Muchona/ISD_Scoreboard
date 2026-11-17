@@ -2162,7 +2162,11 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
               <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>
-                  <strong>Identity & Year Validated:</strong> Document verified for {applicantName} in Year {activeModalYear}. Select document type below to credit points.
+                  <strong>Identity &amp; Year Validated:</strong> Document verified for{' '}
+                  {applicantName || 'Applicant'} in Year {activeModalYear}.{' '}
+                  {pdfAuditResult?.matchedTemplateName
+                    ? `Click "Confirm & Add" below to credit your points.`
+                    : 'Select document type below to credit points.'}
                 </span>
               </div>
             )}
@@ -2172,14 +2176,14 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
               {pdfAuditResult &&
               pdfAuditResult.detectedType !== 'UNKNOWN' &&
               pdfAuditResult.matchedTemplateName ? (
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     Smart Reader automatically identified this file above.
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowManualCategories((prev) => !prev)}
-                    className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline shrink-0 cursor-pointer"
+                    className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:underline text-left sm:text-right cursor-pointer"
                   >
                     {showManualCategories
                       ? 'Hide manual options ▴'
@@ -2278,21 +2282,61 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                   </button>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  setActiveModalYear(null);
-                  setModalUploadFile(null);
-                  setModalYearMismatchError(null);
-                  setPdfAuditResult(null);
-                  setPdfAuditError(null);
-                  setShowManualCategories(false);
-                  setShowAllOfficialCategories(false);
-                  setDspDualChoice('TYPE_A');
-                }}
-                className="btn btn-sm btn-secondary"
-              >
-                Close
-              </button>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                {pdfAuditResult &&
+                  pdfAuditResult.detectedType !== 'UNKNOWN' &&
+                  pdfAuditResult.matchedTemplateName &&
+                  (() => {
+                    const chosenTemplateName =
+                      pdfAuditResult.dualUseTemplateName && dspDualChoice === 'TYPE_B'
+                        ? pdfAuditResult.dualUseTemplateName
+                        : pdfAuditResult.matchedTemplateName;
+                    const smartTemplate = OFFICIAL_ISD_DOCUMENTS.find(
+                      (d) => d.name === chosenTemplateName
+                    );
+                    if (!smartTemplate) return null;
+                    const smartTargetYear =
+                      smartTemplate.category === 'IDENTITY' ? 0 : activeModalYear;
+                    const isYearBlocked =
+                      smartTemplate.category !== 'IDENTITY' &&
+                      activeModalYear !== null &&
+                      activeModalYear > 0 &&
+                      modalDocYear !== activeModalYear;
+                    const isBlocked = modalNameMismatch || isYearBlocked || smartTargetYear === null;
+                    return (
+                      <button
+                        type="button"
+                        disabled={isBlocked}
+                        onClick={() => {
+                          if (smartTargetYear !== null) {
+                            handleAddDocToYear(smartTargetYear, smartTemplate);
+                          }
+                        }}
+                        className="btn btn-sm btn-primary font-bold text-xs"
+                      >
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span>
+                          Confirm &amp; Add {pdfAuditResult.detectedPlainLabel || 'Document'} (+{smartTemplate.points} pts)
+                        </span>
+                      </button>
+                    );
+                  })()}
+                <button
+                  onClick={() => {
+                    setActiveModalYear(null);
+                    setModalUploadFile(null);
+                    setModalYearMismatchError(null);
+                    setPdfAuditResult(null);
+                    setPdfAuditError(null);
+                    setShowManualCategories(false);
+                    setShowAllOfficialCategories(false);
+                    setDspDualChoice('TYPE_A');
+                  }}
+                  className="btn btn-sm btn-secondary"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

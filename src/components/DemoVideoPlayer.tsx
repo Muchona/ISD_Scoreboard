@@ -153,14 +153,14 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
       />
 
       {/* Top Media Bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-100/90 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 transition-colors">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-slate-100/90 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 transition-colors">
+        <div className="flex items-center justify-between sm:justify-start gap-3">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 relative">
+            <span className="flex h-2 w-2 relative shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            <span className="font-mono font-semibold tracking-wider text-slate-700 dark:text-slate-300">
+            <span className="font-mono text-[11px] sm:text-xs font-semibold tracking-wider text-slate-700 dark:text-slate-300 whitespace-nowrap">
               CITIZEN-SCORE DEMO • 1080P 60FPS
             </span>
           </div>
@@ -180,38 +180,38 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
         </div>
 
         {/* Mode Switcher */}
-        <div className="flex items-center gap-1 rounded-lg bg-slate-200/80 dark:bg-slate-800/80 p-0.5 border border-slate-300/70 dark:border-slate-700/60">
+        <div className="grid grid-cols-2 sm:flex items-center gap-1 rounded-lg bg-slate-200/80 dark:bg-slate-800/80 p-0.5 border border-slate-300/70 dark:border-slate-700/60">
           <button
             onClick={() => {
               setVideoMode('simulator');
               setIsPlaying(true);
             }}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+            className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors text-center ${
               videoMode === 'simulator'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
-            Product Walkthrough (Narrated)
+            Product Walkthrough
           </button>
           <button
             onClick={() => {
               setVideoMode('official');
               setIsPlaying(false);
             }}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+            className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors text-center ${
               videoMode === 'official'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
-            Official ISD Guide Stream
+            Official ISD Stream
           </button>
         </div>
       </div>
 
-      {/* Main Video Viewport (16:9 Aspect Ratio) */}
-      <div className="relative aspect-video w-full bg-gradient-to-b from-slate-50 via-slate-100/70 to-slate-200/50 dark:from-slate-900 dark:via-slate-950 dark:to-black overflow-hidden flex items-center justify-center transition-colors">
+      {/* Main Video Viewport */}
+      <div className="relative min-h-[270px] sm:aspect-video w-full bg-gradient-to-b from-slate-50 via-slate-100/70 to-slate-200/50 dark:from-slate-900 dark:via-slate-950 dark:to-black overflow-hidden flex items-center justify-center transition-colors">
         {videoMode === 'official' ? (
           // Official Irish Citizenship Video Stream / Tutorial
           <div className="w-full h-full relative flex flex-col items-center justify-center bg-slate-950">
@@ -462,9 +462,9 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
         </div>
 
         {/* Buttons Row */}
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           {/* Left Controls: Play/Pause, Chapter Prev/Next, Timestamps */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => {
                 if (currentSeconds >= TOTAL_DURATION) {
@@ -473,7 +473,7 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
                   setIsPlaying(!isPlaying);
                 }
               }}
-              className="p-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
+              className="p-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shrink-0"
               title={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white" />}
@@ -481,7 +481,7 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
 
             <button
               onClick={handleRestart}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shrink-0"
               title="Restart from beginning"
             >
               <RotateCcw className="w-4 h-4" />
@@ -496,7 +496,7 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
+              <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300 whitespace-nowrap">
                 Scene {currentScene}/3
               </span>
               <button
@@ -508,16 +508,16 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
               </button>
             </div>
 
-            <span className="font-mono text-slate-500 dark:text-slate-400 text-xs">
+            <span className="font-mono text-slate-500 dark:text-slate-400 text-[11px] whitespace-nowrap">
               {formatTime(currentSeconds)} / {formatTime(TOTAL_DURATION)}
             </span>
           </div>
 
           {/* Right Controls: Sound Toggle, Fullscreen, Action Link */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 ml-auto">
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className={`p-1.5 rounded transition-colors ${
+              className={`p-1.5 rounded transition-colors shrink-0 ${
                 isMuted
                   ? 'text-red-600 dark:text-red-400 hover:text-red-700 bg-red-100 dark:bg-red-950/40'
                   : 'text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 bg-emerald-100 dark:bg-emerald-950/40'
@@ -529,7 +529,7 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
 
             <button
               onClick={handleToggleFullscreen}
-              className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+              className="p-1.5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors shrink-0"
               title="Toggle Fullscreen"
             >
               <Maximize2 className="w-4 h-4" />
@@ -540,7 +540,7 @@ export const DemoVideoPlayer: React.FC<DemoVideoPlayerProps> = ({ onNavigate, on
                 onClose();
                 onNavigate(currentScene === 1 ? 'calculator' : currentScene === 2 ? 'vault' : 'watermark');
               }}
-              className="btn btn-primary btn-sm h-7 px-3 text-xs ml-2"
+              className="btn btn-primary btn-sm h-7 px-2.5 text-[11px] whitespace-nowrap shrink-0"
             >
               <span>
                 {currentScene === 1

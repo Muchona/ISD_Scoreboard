@@ -174,14 +174,36 @@ export function auditPdfContent(
     combined.includes('MYACCOUNT.REVENUE.IE') ||
     upperFile.includes('EDS');
 
-  // D. Check for Utility Bills (Electricity, Gas, Broadband, RTB)
+  // D. Check for Utility Bills (Electricity, Gas, Waste/Refuse, Water, Broadband, RTB)
   const isElectricIreland = combined.includes('ELECTRIC IRELAND') || combined.includes('ESB NETWORKS');
   const isBordGais = combined.includes('BORD GAIS') || combined.includes('BORD GÁIS');
   const isEnergia = combined.includes('ENERGIA');
   const isAirtricity = combined.includes('SSE AIRTRICITY') || combined.includes('AIRTRICITY');
+  const isPinergy = combined.includes('PINERGY');
+  const isFlogas = combined.includes('FLOGAS');
+  const isPrepayPower = combined.includes('PREPAYPOWER') || combined.includes('YUNO ENERGY');
+  const isUisce = combined.includes('UISCE EIREANN') || combined.includes('UISCE ÉIREANN') || combined.includes('IRISH WATER');
+  const isMcElvaney = combined.includes('MCELVANEY');
+  const isWasteUtility =
+    isMcElvaney ||
+    combined.includes('PANDA WASTE') ||
+    combined.includes('GREYHOUND RECYCLING') ||
+    combined.includes('CITYBIN') ||
+    combined.includes('CITY BIN') ||
+    combined.includes('COUNTRY CLEAN') ||
+    combined.includes('OXIGEN') ||
+    combined.includes('BORD NA MONA') ||
+    combined.includes('WASTE UTILITY') ||
+    combined.includes('WAST UTILITY') ||
+    combined.includes('REFUSE') ||
+    combined.includes('BIN COLLECTION') ||
+    combined.includes('DOMESTIC WASTE') ||
+    upperFile.includes('WASTE') ||
+    upperFile.includes('WAST');
   const isVirgin = combined.includes('VIRGIN MEDIA');
   const isEir = combined.includes('EIRCOM') || combined.includes('EIR ');
   const isVodafone = combined.includes('VODAFONE');
+  const isSky = combined.includes('SKY IRELAND') || upperFile.includes('SKY');
   const isRTB = combined.includes('RESIDENTIAL TENANCIES BOARD') || combined.includes('RTB');
   const isTVLicence =
     combined.includes('TELEVISION LICENCE') ||
@@ -193,7 +215,7 @@ export function auditPdfContent(
     upperFile.includes('TV') ||
     upperFile.includes('TELEVISION');
 
-  const isBroadband = isVirgin || isEir || isVodafone;
+  const isBroadband = isVirgin || isEir || isVodafone || isSky;
   const isOfficialCorrespondence =
     combined.includes('LOCAL PROPERTY TAX') ||
     /\bLPT\b/.test(combined) ||
@@ -208,13 +230,23 @@ export function auditPdfContent(
     isBordGais ||
     isEnergia ||
     isAirtricity ||
+    isPinergy ||
+    isFlogas ||
+    isPrepayPower ||
+    isUisce ||
+    isWasteUtility ||
     isBroadband ||
     isRTB ||
     isTVLicence ||
     isOfficialCorrespondence ||
+    combined.includes('UTILITY BILL') ||
     combined.includes('BILLING PERIOD') ||
     combined.includes('ELECTRICITY BILL') ||
-    combined.includes('GAS BILL');
+    combined.includes('GAS BILL') ||
+    combined.includes('MPRN') ||
+    combined.includes('GPRN') ||
+    upperFile.includes('UTILITY') ||
+    upperFile.includes('BILL');
 
   // E. Check for GP / Doctor / Medical Practice Attendance Letters (Type B - 50 pts)
   const isMedical =
@@ -296,6 +328,75 @@ export function auditPdfContent(
     dualUseTemplateName = 'Official Correspondence on Local Property Tax (LPT) / Social Welfare';
     scorecardClassification = 'TYPE_A';
     pointsRecommended = 100;
+  } else if (isUtility) {
+    detectedType = 'UTILITY_BILL';
+    if (isTVLicence) {
+      detectedIssuer = 'An Post (TV Licence Records Office)';
+      detectedPlainLabel = 'TV Licence (An Post)';
+      matchedTemplateName = 'Television Licence (An Post / Ceadúnas Teilifíse)';
+    } else if (isRTB) {
+      detectedIssuer = 'Residential Tenancies Board';
+      detectedPlainLabel = 'Rent / Tenancy Registration (RTB)';
+      matchedTemplateName = 'Residential Tenancy Agreement / RTB Registration Letter';
+    } else if (isOfficialCorrespondence) {
+      detectedIssuer =
+        combined.includes('LOCAL PROPERTY TAX') || /\bLPT\b/.test(combined) || upperFile.includes('LPT')
+          ? 'Revenue Commissioners (Local Property Tax)'
+          : 'Irish Local Authority / County Council';
+      detectedPlainLabel = 'Government / LPT / Council Letter';
+      matchedTemplateName = 'Official Correspondence on Local Property Tax (LPT) / Social Welfare';
+    } else if (isBroadband) {
+      detectedIssuer = isVirgin
+        ? 'Virgin Media'
+        : isEir
+        ? 'Eircom / eir'
+        : isSky
+        ? 'Sky Ireland'
+        : 'Vodafone Ireland';
+      detectedPlainLabel = `${detectedIssuer} Broadband / Phone Bill`;
+      matchedTemplateName = 'Household Broadband / Landline Telephone / Cable TV Bill';
+    } else if (isWasteUtility) {
+      detectedIssuer = isMcElvaney ? 'McElvaney Waste & Recycling' : 'Irish Waste & Utility Provider';
+      detectedPlainLabel = `${detectedIssuer} Utility Bill`;
+      matchedTemplateName = 'Household Electricity / Gas / Water Utility Bill';
+    } else {
+      detectedIssuer = isElectricIreland
+        ? 'Electric Ireland'
+        : isBordGais
+        ? 'Bord Gáis Energy'
+        : isEnergia
+        ? 'Energia'
+        : isAirtricity
+        ? 'SSE Airtricity'
+        : isPinergy
+        ? 'Pinergy'
+        : isFlogas
+        ? 'Flogas'
+        : isPrepayPower
+        ? 'PrepayPower / Yuno'
+        : isUisce
+        ? 'Uisce Éireann (Irish Water)'
+        : 'Irish Utility Provider';
+      detectedPlainLabel =
+        detectedIssuer !== 'Irish Utility Provider' ? `${detectedIssuer} Utility Bill` : 'Home Energy / Water Utility Bill';
+      matchedTemplateName = 'Household Electricity / Gas / Water Utility Bill';
+    }
+    scorecardClassification = 'TYPE_B';
+    pointsRecommended = 50;
+  } else if (isMedical) {
+    const isHospitalDoc = combined.includes('HOSPITAL') || combined.includes('SCREENING');
+    detectedType = 'MEDICAL_LETTER';
+    detectedIssuer = combined.includes('CASTLE MEADOW')
+      ? 'Castle Meadow Family Practice (Monaghan)'
+      : isHospitalDoc
+      ? 'Irish Hospital / Health Clinic'
+      : 'Irish GP / Medical Practitioner';
+    detectedPlainLabel = isHospitalDoc ? 'Hospital / Clinic Attendance Letter' : 'Doctor / GP Attendance Letter';
+    matchedTemplateName = isHospitalDoc
+      ? 'Hospital / Clinic Attendance Letter or Health Screening Check'
+      : 'Doctor / GP Medical Attendance Letter or Clinic Registration';
+    scorecardClassification = 'TYPE_B';
+    pointsRecommended = 50;
   } else if (isBankStatement) {
     detectedType = 'BANK_STATEMENT';
     detectedIssuer = isPTSB
@@ -316,57 +417,6 @@ export function auditPdfContent(
     matchedTemplateName = 'Bank Statements (3+ Consecutive Monthly POS Transactions in Ireland)';
     scorecardClassification = 'TYPE_A';
     pointsRecommended = 100;
-  } else if (isMedical) {
-    const isHospitalDoc = combined.includes('HOSPITAL') || combined.includes('SCREENING');
-    detectedType = 'MEDICAL_LETTER';
-    detectedIssuer = combined.includes('CASTLE MEADOW')
-      ? 'Castle Meadow Family Practice (Monaghan)'
-      : isHospitalDoc
-      ? 'Irish Hospital / Health Clinic'
-      : 'Irish GP / Medical Practitioner';
-    detectedPlainLabel = isHospitalDoc ? 'Hospital / Clinic Attendance Letter' : 'Doctor / GP Attendance Letter';
-    matchedTemplateName = isHospitalDoc
-      ? 'Hospital / Clinic Attendance Letter or Health Screening Check'
-      : 'Doctor / GP Medical Attendance Letter or Clinic Registration';
-    scorecardClassification = 'TYPE_B';
-    pointsRecommended = 50;
-  } else if (isUtility) {
-    detectedType = 'UTILITY_BILL';
-    if (isTVLicence) {
-      detectedIssuer = 'An Post (TV Licence Records Office)';
-      detectedPlainLabel = 'TV Licence (An Post)';
-      matchedTemplateName = 'Television Licence (An Post / Ceadúnas Teilifíse)';
-    } else if (isRTB) {
-      detectedIssuer = 'Residential Tenancies Board';
-      detectedPlainLabel = 'Rent / Tenancy Registration (RTB)';
-      matchedTemplateName = 'Residential Tenancy Agreement / RTB Registration Letter';
-    } else if (isOfficialCorrespondence) {
-      detectedIssuer =
-        combined.includes('LOCAL PROPERTY TAX') || /\bLPT\b/.test(combined) || upperFile.includes('LPT')
-          ? 'Revenue Commissioners (Local Property Tax)'
-          : 'Irish Local Authority / County Council';
-      detectedPlainLabel = 'Government / LPT / Council Letter';
-      matchedTemplateName = 'Official Correspondence on Local Property Tax (LPT) / Social Welfare';
-    } else if (isBroadband) {
-      detectedIssuer = isVirgin ? 'Virgin Media' : isEir ? 'Eircom / eir' : 'Vodafone Ireland';
-      detectedPlainLabel = `${detectedIssuer} Broadband / Phone Bill`;
-      matchedTemplateName = 'Household Broadband / Landline Telephone / Cable TV Bill';
-    } else {
-      detectedIssuer = isElectricIreland
-        ? 'Electric Ireland'
-        : isBordGais
-        ? 'Bord Gáis Energy'
-        : isEnergia
-        ? 'Energia'
-        : isAirtricity
-        ? 'SSE Airtricity'
-        : 'Irish Utility Provider';
-      detectedPlainLabel =
-        detectedIssuer !== 'Irish Utility Provider' ? `${detectedIssuer} Energy / Utility Bill` : 'Home Energy / Water Utility Bill';
-      matchedTemplateName = 'Household Electricity / Gas / Water Utility Bill';
-    }
-    scorecardClassification = 'TYPE_B';
-    pointsRecommended = 50;
   }
 
   // 2. Year Detection (scans both PDF text and the filename)

@@ -318,15 +318,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     type="button"
                     disabled={isProcessing}
                     onClick={() => executePayment(user?.name || '')}
-                    className="btn btn-primary w-full h-11 text-sm font-bold shadow-lg shadow-emerald-700/25 flex items-center justify-center gap-2"
+                    className="btn btn-primary w-full min-h-11 h-auto py-2.5 px-3 text-xs sm:text-sm font-bold shadow-lg shadow-emerald-700/25 flex items-center justify-center gap-2 whitespace-normal text-center"
                   >
-                    <Lock className="w-4 h-4" />
+                    <Lock className="w-4 h-4 shrink-0" />
                     <span>
                       {user
-                        ? 'Continue to Secure Stripe Checkout (€5.00 / mo)'
+                        ? 'Continue to Stripe Checkout (€5.00 / mo)'
                         : 'Sign In / Create Account to Upgrade'}
                     </span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 shrink-0" />
                   </button>
 
                   <p className="text-[11px] text-slate-500 text-center leading-relaxed">
