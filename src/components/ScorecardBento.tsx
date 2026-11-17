@@ -698,6 +698,19 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
       return;
     }
 
+    // Prevent uploading the exact same file twice into the same scorecard slot
+    const targetCard = scorecards.find((c) => c.year === year);
+    const uploadedName = modalUploadFile?.name?.trim().toLowerCase();
+    if (
+      uploadedName &&
+      targetCard?.documents.some((d) => d.fileName?.trim().toLowerCase() === uploadedName)
+    ) {
+      setModalYearMismatchError(
+        `Duplicate File: "${modalUploadFile?.name}" is already uploaded in ${targetCard.label}. Remove the existing one first if you want to replace it.`
+      );
+      return;
+    }
+
     // Determine points to award based on automated PDF audit result
     let awardedPoints = docTemplate.points;
     let auditNote = docTemplate.notes;
