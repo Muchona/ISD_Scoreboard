@@ -120,8 +120,16 @@ export function auditPdfContent(
     upperText.includes('BANKING ONLY BETTER') ||
     upperText.includes('OPEN24.IE');
 
-  const isBOI = combined.includes('BANK OF IRELAND') || upperText.includes('BOFIIE') || upperText.includes('365ONLINE');
-  const isAIB = combined.includes('ALLIED IRISH BANKS') || combined.includes('AIB') || upperText.includes('AIBKIE');
+  const textWithoutRegulator = combined.replace(/CENTRAL BANK OF IRELAND/g, '');
+  const isBOI =
+    textWithoutRegulator.includes('BANK OF IRELAND') ||
+    upperText.includes('BOFIIE') ||
+    upperText.includes('365ONLINE');
+  const isAIB =
+    combined.includes('ALLIED IRISH BANKS') ||
+    combined.includes('AIB.IE') ||
+    /\bAIB\b/.test(combined) ||
+    upperText.includes('AIBKIE');
   const isRevolut = combined.includes('REVOLUT') || upperText.includes('REVUIE');
   const isAnPostMoney =
     combined.includes('AN POST MONEY') ||
@@ -534,20 +542,28 @@ export function auditPdfContent(
       }
     }
 
-    // Direct POS indicator matches like "POS AMZNMktplace" or PTSB custom font prefixes (&!Ë = POS, È.+ = TKN, Ä+Ä = CNC)
+    // Direct POS / Card / AIB / BOI / Revolut transaction indicators:
+    // - AIB uses "VDP-" (Visa Debit POS), "VDC-" (Visa Debit Contactless), "ATM ", "*MOBI ", "TxnDate:"
+    // - PTSB uses "POS " or custom font prefixes (&!Ë = POS, È.+ = TKN, Ä+Ä = CNC)
     const posHits = upperText.match(/\bPOS\s+[A-Z0-9\*\._\s]{3,20}\b/g) || [];
+    const aibBoiHits =
+      upperText.match(/(?:\bVDP[\-\s]|\bVDC[\-\s]|\bATM\s+[A-Z]|\*MOBI\s+[A-Z0-9]|\bTXNDATE:)/g) || [];
     const ptsbTxHits = isPTSB ? text.match(/(&!Ë|È\.\+|Ä\+Ä)/g) || [] : [];
-    posCount = Math.max(posHits.length + ptsbTxHits.length, foundMerchants.size);
+    posCount = Math.max(posHits.length + aibBoiHits.length + ptsbTxHits.length, foundMerchants.size);
 
     // If text was sparse or contained very few lines
     const isSingleTransaction = posCount <= 1;
 
-    // Detect month span (standard English months + PTSB custom font encoded month tokens)
+    // Detect month span (exclude English modal verb "may" unless paired with a day/year)
     const monthsFound = new Set<string>();
-    const monthRegex = /\b(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b/gi;
+    const monthRegex =
+      /\b(JANUARY|FEBRUARY|MARCH|APRIL|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b|\b(?:\d{1,2}\s+MAY|MAY\s+20\d{2})\b/gi;
     const monthHits = upperText.match(monthRegex) || [];
     for (const m of monthHits) {
-      monthsFound.add(m.toUpperCase().slice(0, 3));
+      const cleaned = m.toUpperCase().replace(/[^A-Z]/g, '');
+      if (cleaned.length >= 3) {
+        monthsFound.add(cleaned.slice(0, 3));
+      }
     }
     if (isPTSB) {
       const ptsbMonthTokens: Array<[string, RegExp]> = [
