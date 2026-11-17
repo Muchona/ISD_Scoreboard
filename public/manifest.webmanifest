@@ -1,0 +1,24 @@
+{
+  "name": "CitizenScore.ie — Irish Citizenship Scorecard & Vault",
+  "short_name": "CitizenScore",
+  "description": "Irish naturalisation (ISD Form 8) 150-point scorecard, 1,825-day residency calculator, and local PDF watermarker.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0B1220",
+  "theme_color": "#10B981",
+  "lang": "en-IE",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

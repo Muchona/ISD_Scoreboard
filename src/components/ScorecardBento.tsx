@@ -1195,7 +1195,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
           return (
             <div
               key={card.year}
-              className={`relative overflow-hidden p-5 rounded-2xl bg-white dark:bg-obsidian-800 border transition-all duration-300 flex flex-col justify-between group ${tricolour.cardBorder} ${tricolour.shadowGlow}`}
+              className={`relative overflow-hidden p-5 min-h-[310px] rounded-2xl bg-white dark:bg-obsidian-800 border transition-all duration-300 flex flex-col justify-between group ${tricolour.cardBorder} ${tricolour.shadowGlow}`}
             >
               {/* Top Ambient Radiant Spotlight (Higgsfield Style) */}
               <div
@@ -1277,6 +1277,13 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
 
                 {/* Uploaded Documents List */}
                 <div className="space-y-2">
+                  {card.documents.length === 0 && (
+                    <div className="card-inset p-4 text-center text-xs text-slate-500 dark:text-slate-400 border border-dashed border-slate-300/80 dark:border-white/10">
+                      {card.year === 0
+                        ? 'No identity document added yet (150 pts required).'
+                        : 'No residency proofs added for this year yet (1 Type A + 1 Type B required).'}
+                    </div>
+                  )}
                   {card.documents.map((doc, docIdx) => {
                     // Check if this document is a secondary duplicate of Type A or Type B
                     const priorValidTypeA = card.documents
@@ -1430,7 +1437,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                   </button>
                   {card.year > 0 && !card.isComplete && (
                     <a
-                      href="/residency-affidavit-proof-form-citizenship-0092026.pdf"
+                      href="./residency-affidavit-proof-form-citizenship-0092026.pdf"
                       download="ISD_Residential_Proof_Affidavit_Citz-009-2026.pdf"
                       className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors"
                       title="Only use if you cannot reach 150 points with standard documents"
