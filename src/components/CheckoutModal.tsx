@@ -312,7 +312,35 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </ul>
               </div>
 
-              {/* Express Checkout Simulation */}
+              {user?.id !== 'demo-user-1' ? (
+                <div className="space-y-3 pt-1">
+                  <button
+                    type="button"
+                    disabled={isProcessing}
+                    onClick={() => executePayment(user?.name || '')}
+                    className="btn btn-primary w-full h-11 text-sm font-bold shadow-lg shadow-emerald-700/25 flex items-center justify-center gap-2"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>
+                      {user
+                        ? 'Continue to Secure Stripe Checkout (€5.00 / mo)'
+                        : 'Sign In / Create Account to Upgrade'}
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+                    Pay securely with Card, Apple Pay, Google Pay, Revolut Pay, or Link on Stripe’s hosted page. Cancel anytime from Account Settings.
+                  </p>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>256-bit SSL encrypted checkout powered by Stripe</span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Express Checkout Simulation (Demo Account Only) */}
               <div className="space-y-2">
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                   Express 1-Click Checkout
@@ -489,6 +517,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <span>Guaranteed safe & secure 256-bit SSL encrypted checkout via Stripe</span>
                 </div>
               </form>
+                </>
+              )}
             </>
           )}
         </div>
