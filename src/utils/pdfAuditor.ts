@@ -201,7 +201,11 @@ export function auditPdfContent(
     upperFile.includes('WASTE') ||
     upperFile.includes('WAST');
   const isVirgin = combined.includes('VIRGIN MEDIA');
-  const isEir = combined.includes('EIRCOM') || combined.includes('EIR ');
+  const isEir =
+    combined.includes('EIRCOM') ||
+    combined.includes('EIR.IE') ||
+    combined.includes('EIR BROADBAND') ||
+    combined.includes('MYEIR');
   const isVodafone = combined.includes('VODAFONE');
   const isSky = combined.includes('SKY IRELAND') || upperFile.includes('SKY');
   const isRTB = combined.includes('RESIDENTIAL TENANCIES BOARD') || combined.includes('RTB');
@@ -345,6 +349,10 @@ export function auditPdfContent(
           : 'Irish Local Authority / County Council';
       detectedPlainLabel = 'Government / LPT / Council Letter';
       matchedTemplateName = 'Official Correspondence on Local Property Tax (LPT) / Social Welfare';
+    } else if (isWasteUtility) {
+      detectedIssuer = isMcElvaney ? 'McElvaney Waste & Recycling' : 'Irish Waste & Utility Provider';
+      detectedPlainLabel = `${detectedIssuer} Utility Bill`;
+      matchedTemplateName = 'Household Electricity / Gas / Water Utility Bill';
     } else if (isBroadband) {
       detectedIssuer = isVirgin
         ? 'Virgin Media'
@@ -355,10 +363,6 @@ export function auditPdfContent(
         : 'Vodafone Ireland';
       detectedPlainLabel = `${detectedIssuer} Broadband / Phone Bill`;
       matchedTemplateName = 'Household Broadband / Landline Telephone / Cable TV Bill';
-    } else if (isWasteUtility) {
-      detectedIssuer = isMcElvaney ? 'McElvaney Waste & Recycling' : 'Irish Waste & Utility Provider';
-      detectedPlainLabel = `${detectedIssuer} Utility Bill`;
-      matchedTemplateName = 'Household Electricity / Gas / Water Utility Bill';
     } else {
       detectedIssuer = isElectricIreland
         ? 'Electric Ireland'

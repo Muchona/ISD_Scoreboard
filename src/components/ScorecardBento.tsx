@@ -1842,15 +1842,15 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                           </div>
                         )}
 
-                        <div className="rounded-xl p-3 bg-white/80 dark:bg-black/30 border border-emerald-500/35 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                          <div className="space-y-0.5">
+                        <div className="rounded-xl p-3.5 bg-white/80 dark:bg-black/30 border border-emerald-500/35 flex flex-col gap-3">
+                          <div className="space-y-1">
                             <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-400 block">
                               Smart Document Match
                             </span>
-                            <div className="text-xs font-extrabold text-slate-900 dark:text-white">
+                            <div className="text-sm font-extrabold text-slate-900 dark:text-white">
                               {pdfAuditResult.detectedPlainLabel || smartTemplate.name}
                             </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
                               {smartTemplate.category === 'IDENTITY'
                                 ? activeModalYear !== 0
                                   ? 'Identity document detected — will be added to your Identity Verification card'
@@ -1874,7 +1874,7 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
                                 handleAddDocToYear(smartTargetYear, smartTemplate);
                               }
                             }}
-                            className={`shrink-0 px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                            className={`w-full px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm ${
                               isBlocked
                                 ? 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400 cursor-not-allowed'
                                 : isAuditZero
