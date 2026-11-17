@@ -65,11 +65,38 @@ export const App: React.FC = () => {
     document.body.scrollTop = 0;
   }, []);
 
-  // Always jump to top whenever user changes page / tab
+  // Always jump to top whenever user changes page / tab, and attach smooth scroll-reveal to off-screen cards
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.remove('scroll-reveal-pending');
+            entry.target.classList.add('scroll-reveal-visible');
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+    );
+
+    const targets = document.querySelectorAll('main .card, main section');
+    const vh = window.innerHeight;
+    targets.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top > vh * 0.92) {
+        el.classList.add('scroll-reveal-pending');
+        observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
   }, [activeTab]);
 
   // Auth, Checkout, Legal & Compliance Modal State

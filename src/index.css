@@ -27,6 +27,7 @@
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     width: 100%;
+    scroll-behavior: smooth;
   }
   html.dark {
     color-scheme: dark;
@@ -49,6 +50,26 @@
   }
   button:disabled {
     cursor: not-allowed;
+  }
+}
+
+/* Smooth GPU-accelerated scroll-reveal animation */
+.scroll-reveal-pending {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.scroll-reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal-pending,
+  .scroll-reveal-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
 
