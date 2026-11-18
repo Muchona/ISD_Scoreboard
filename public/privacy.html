@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en-IE">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy &amp; Zero-Upload Security Architecture — CitizenScore.ie</title>
+    <meta name="description" content="How CitizenScore.ie protects your privacy: 0 KB of passports, bank statements, or PDFs are ever uploaded to any server. 100% local in-browser processing (works in Airplane Mode)." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.citizenscore.ie/privacy.html" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Privacy &amp; Zero-Upload Security Architecture — CitizenScore.ie" />
+    <meta property="og:description" content="0 KB uploaded: passports, bank statements, and PDFs stay 100% on your device and are processed locally in your browser." />
+    <meta property="og:url" content="https://www.citizenscore.ie/privacy.html" />
+    <meta property="og:image" content="https://www.citizenscore.ie/pro-card.png" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Are my passport or bank statements uploaded to CitizenScore.ie servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. CitizenScore.ie uploads 0 KB of your PDFs or images. Document reading, OCR, and PDF watermarking run 100% locally inside your web browser memory and continue working even if you turn on Airplane Mode after loading the page."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What data is stored if I create an account?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "If you choose to sign in, only your email address, residency date ranges, scorecard progress metadata (such as document type, points, and filename), and subscription status are stored in EU-hosted Supabase databases. Raw PDF or image files are never transmitted or stored."
+            }
+          }
+        ]
+      }
+    </script>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: #0b1220;
+        color: #e2e8f0;
+        line-height: 1.65;
+      }
+      .wrap { max-width: 820px; margin: 0 auto; padding: 28px 20px 64px; }
+      header {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+        flex-wrap: wrap;
+      }
+      .brand { color: #fff; text-decoration: none; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+      .brand span { color: #10b981; }
+      .cta {
+        display: inline-block; background: #10b981; color: #042f2e; font-weight: 700;
+        text-decoration: none; padding: 10px 18px; border-radius: 10px; font-size: 14px;
+      }
+      .cta:hover { background: #34d399; }
+      h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.2; color: #fff; margin: 28px 0 12px; }
+      h2 { font-size: 22px; color: #fff; margin: 32px 0 10px; }
+      p, li { color: #cbd5e1; font-size: 16px; }
+      .card {
+        background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px; padding: 20px; margin: 20px 0;
+      }
+      .badge {
+        display: inline-block; font-size: 12px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.06em; padding: 4px 10px; border-radius: 999px;
+        background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3);
+      }
+      .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+      .links a { color: #34d399; text-decoration: none; font-size: 14px; font-weight: 600; }
+      .links a:hover { text-decoration: underline; }
+      footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #64748b; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <a class="brand" href="/">Citizen<span>Score</span>.ie</a>
+        <a class="cta" href="/">Open CitizenScore.ie →</a>
+      </header>
+
+      <p style="margin-top:24px;"><span class="badge">Zero-Upload Privacy</span></p>
+      <h1>Privacy &amp; 0 KB Document Upload Security</h1>
+      <p>
+        CitizenScore.ie was built so Irish citizenship applicants can verify their 150-point Form 8 proofs and watermark PDFs
+        <strong>without ever sending their passport, IRP card, or bank statements over the internet</strong>.
+      </p>
+
+      <div class="card">
+        <h2>1. 0 KB Uploaded — 100% In-Browser Processing</h2>
+        <ul>
+          <li><strong>No file uploads:</strong> When you select a PDF or image in the Scorecard or PDF Watermarker, the file is read strictly inside your own device's browser memory (<code>ArrayBuffer</code>).</li>
+          <li><strong>Local OCR &amp; Watermarking:</strong> Smart document reading (PDF.js / Tesseract.js) and PDF watermarking (pdf-lib) execute completely on your phone or computer.</li>
+          <li><strong>Test it yourself:</strong> After loading CitizenScore.ie, you can turn on <strong>Airplane Mode</strong> or disconnect Wi-Fi — document scanning and PDF watermarking still work 100%.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>2. What Data Is Saved (Only If You Sign In)</h2>
+        <ul>
+          <li><strong>Guest / Calculator Use:</strong> No account is required. Data stays in your browser's <code>localStorage</code>.</li>
+          <li><strong>Signed-In Sync (EU GDPR):</strong> If you create an account, only your email address, residency stamp dates, absence dates, and scorecard checklist metadata (document category, points, and filename) are stored in EU-hosted Supabase servers — <strong>never your raw PDF or image files</strong>.</li>
+          <li><strong>Payments &amp; Analytics:</strong> Pro subscriptions are processed by Stripe (PCI-DSS Level 1). Traffic stats use cookieless Vercel Web Analytics.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>3. Your GDPR Rights &amp; Contact</h2>
+        <p>
+          You can export or delete your account data at any time. For any privacy or security questions, email
+          <a href="mailto:support@citizenscore.ie" style="color:#34d399;">support@citizenscore.ie</a>.
+        </p>
+      </div>
+
+      <div class="links">
+        <a href="/150-point-rule-irish-citizenship.html">→ 150-Point Rule Checklist</a>
+        <a href="/irish-citizenship-1825-day-calculator.html">→ 1,825-Day Residency Guide</a>
+        <a href="/70-day-absence-rule-ireland.html">→ 70-Day Absence Guide</a>
+        <a href="/">→ Back to CitizenScore.ie App</a>
+      </div>
+
+      <footer>
+        CitizenScore.ie — Independent Irish naturalisation compliance tool. Not affiliated with Immigration Service Delivery (ISD).
+      </footer>
+    </div>
+  </body>
+</html>
