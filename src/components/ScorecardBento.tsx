@@ -1655,6 +1655,15 @@ export const ScorecardBento: React.FC<ScorecardBentoProps> = ({
               </button>
             </div>
 
+            {/* Zero-Upload Privacy Guarantee */}
+            <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-emerald-900 dark:text-emerald-200 leading-relaxed">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">0 KB Uploaded • 100% Local in Your Browser:</span>{' '}
+                Your passport, bank statements, and PDFs never leave your device or touch any server. You can even turn on Airplane Mode while scanning.
+              </div>
+            </div>
+
             {/* Step 1: File Upload Zone (Optional / Real File Selection) */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">

@@ -105,12 +105,19 @@ export const HomeLanding: React.FC<HomeLandingProps> = ({ onNavigate }) => {
           </div>
           <div className="flex items-center gap-1.5">
             <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Client-Side PII Security (GDPR)</span>
+            <span>0 KB Uploaded — Runs 100% in Your Browser</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Scale className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>Section 15C 70-Day Absence Checked</span>
           </div>
+        </div>
+
+        <div className="max-w-xl mx-auto">
+          <p className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[11px] sm:text-xs font-medium text-emerald-800 dark:text-emerald-300">
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>Your passport &amp; bank statements never leave your device — works even in Airplane Mode.</span>
+          </p>
         </div>
 
         {/* High-Fidelity Hero Visual (Irish Passport + Form 8 Dossier Stack) */}
