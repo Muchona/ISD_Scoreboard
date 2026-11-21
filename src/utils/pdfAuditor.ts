@@ -1,9 +1,9 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// @ts-ignore - bundle pdf.js worker directly in memory so PDF reading works 100% offline in Airplane Mode with zero network requests
+import * as pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs';
 
-// Configure pdfjs worker from local Vite bundle (works 100% offline / Airplane Mode)
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+if (typeof globalThis !== 'undefined') {
+  (globalThis as any).pdfjsWorker = pdfjsWorker;
 }
 
 export interface DocumentAuditResult {

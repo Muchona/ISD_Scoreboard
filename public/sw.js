@@ -1,4 +1,4 @@
-const CACHE_NAME = 'citizenscore-offline-v2';
+const CACHE_NAME = 'citizenscore-offline-v3';
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/logo.png'];
 
 async function precacheAppAndBundles() {
@@ -27,8 +27,10 @@ async function precacheAppAndBundles() {
 
           if (url.endsWith('.js')) {
             const jsText = await assetRes.text();
-            const subMatches = jsText.match(/assets\/[a-zA-Z0-9._-]+\.(?:js|mjs|css)/g) || [];
-            const subUrls = Array.from(new Set(subMatches.map((m) => '/' + m)));
+            const subMatches = jsText.match(/(?:assets\/)?[a-zA-Z0-9._-]+-[a-zA-Z0-9_-]{8}\.(?:js|mjs|css)/g) || [];
+            const subUrls = Array.from(
+              new Set(subMatches.map((m) => (m.startsWith('assets/') ? '/' + m : '/assets/' + m)))
+            );
             await Promise.all(
               subUrls.map((subUrl) =>
                 fetch(subUrl)
